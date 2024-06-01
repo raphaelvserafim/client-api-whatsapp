@@ -35,9 +35,10 @@ yarn add @raphaelvserafim/client-api-whatsapp
 ```
 
 ```js
-import WhatsApp  from '@raphaelvserafim/client-api-whatsapp';
+import { WhatsApp, StatusPresence, TypeMessage, } from '@raphaelvserafim/client-api-whatsapp';
 
 const whatsapp = new WhatsApp({ server: "https://us.api-wa.me", key: "12345678" });
+
 const to = "559999999999" //  If you want to send it to the group = 123456789@us
 ```
 
