@@ -1,13 +1,19 @@
 {
   "name": "@raphaelvserafim/client-api-whatsapp",
   "version": "1.0.0",
-  "description": "",
+  "description": "With our API, you can send text, audio, video, and image messages quickly and easily. Adapt to your business communication needs comprehensively.",
   "main": "dist/WhatsApp.js",
   "types": "dist/WhatsApp.d.ts",
   "private": false,
   "keywords": [
     "api",
-    "whatsapp"
+    "whatsapp",
+    "typescript",
+    "js",
+    "bot",
+    "whatsapp-api",
+    "whatsapp-bot",
+    "whatsapp-chat"
   ],
   "scripts": {
     "build": "tsc --project tsconfig.compile.json",
