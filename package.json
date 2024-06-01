@@ -1,6 +1,6 @@
 {
   "name": "@raphaelvserafim/client-api-whatsapp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "With our API, you can send text, audio, video, and image messages quickly and easily. Adapt to your business communication needs comprehensively.",
   "main": "dist/WhatsApp.js",
   "types": "dist/WhatsApp.d.ts",
