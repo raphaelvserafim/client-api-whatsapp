@@ -86,13 +86,13 @@ export class WhatsApp {
         location?: Location,
         name?: string,
         options?: string[],
-        sections: Section,
+        sections?: Section,
         footer?: string,
         description?: string,
         title?: string,
         buttonText?: string,
       }
-    }, reply: boolean = false): Promise<any> {
+    }, reply: boolean = false ): Promise<any> {
     if (reply) {
       this.route = Routes.MESSAGES + "/" + data.body.msgId + "/" + data.type;
     } else {

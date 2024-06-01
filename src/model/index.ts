@@ -57,7 +57,7 @@ export interface WebhookBody {
 export interface Contact {
   fullName: string;
   phoneNumber: string;
-  organization: string;
+  organization?: string;
 }
 
 
