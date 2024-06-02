@@ -17,24 +17,21 @@ export class WhatsApp {
     if (!this.route || !this.method) {
       throw new Error('Path and method must be defined before making a request.');
     }
-
     const options: AxiosRequestConfig = {
       url: `${this.server}/${this.key}/${this.route}`,
       method: this.method,
       headers: {
         'Content-Type': 'application/json'
       },
-      data: this.body ? JSON.stringify(this.body) : null
+      data: (this.method === 'POST' || this.method === 'PUT') ? JSON.stringify(this.body) : undefined
     };
-
     try {
-      const response: AxiosResponse = await axios(options);
+      const response = await axios(options);
       return response.data;
     } catch (error: any) {
       throw new Error(`HTTP Request Error: ${error.message} (status: ${error.response?.status})`);
     }
   }
-
 
   async connect(): Promise<any> {
     this.route = Routes.INSTANCES;
@@ -92,7 +89,7 @@ export class WhatsApp {
         title?: string,
         buttonText?: string,
       }
-    }, reply: boolean = false ): Promise<any> {
+    }, reply: boolean = false): Promise<any> {
     if (reply) {
       this.route = Routes.MESSAGES + "/" + data.body.msgId + "/" + data.type;
     } else {
