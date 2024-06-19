@@ -88,6 +88,8 @@ export class WhatsApp {
         description?: string,
         title?: string,
         buttonText?: string,
+        thumbnailUrl?: string,
+        sourceUrl?: string,
       }
     }, reply: boolean = false): Promise<any> {
     if (reply) {

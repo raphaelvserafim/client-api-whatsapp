@@ -17,7 +17,7 @@ export enum Routes {
   MESSAGES = 'message',
   CONTACTS = 'contacts',
   GROUPS = 'groups',
-  ACTIONS= 'actions',
+  ACTIONS = 'actions',
 }
 
 
@@ -30,7 +30,8 @@ export enum TypeMessage {
   DOCUMENT = 'document',
   CONTACT = 'contact',
   LOCATION = 'location',
-  REACTION = 'reaction'
+  REACTION = 'reaction',
+  LINK = 'link',
 }
 
 

@@ -98,6 +98,23 @@ whatsapp.sendMessage({
 }).catch(console.error)
 ```
 
+### Link
+```js
+whatsapp.sendMessage({
+  type: TypeMessage.LINK,
+  body: {
+    to: to,
+    text: "\n",
+    title:"API WhatsApp",
+    description:"Simplify communication, send messages in a versatile way and achieve exceptional results for your business",
+    thumbnailUrl:"",
+    sourceUrl:"https://api-wa.me",
+  }
+}).then((response) => {
+ console.log(response)
+}).catch(console.error)
+```
+
 ### Audio
 ```js
 whatsapp.sendMessage({
