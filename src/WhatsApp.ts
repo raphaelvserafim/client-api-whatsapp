@@ -22,9 +22,11 @@ export class WhatsApp {
       method: this.method,
       headers: {
         'Content-Type': 'application/json'
-      },
-      data: (this.method === 'POST' || this.method === 'PUT') ? JSON.stringify(this.body) : undefined
+      }
     };
+    if ((this.method === 'POST' || this.method === 'PUT') && this.body) {
+      options.data = JSON.stringify(this.body);
+    }
     try {
       const response = await axios(options);
       return response.data;
@@ -32,6 +34,7 @@ export class WhatsApp {
       throw new Error(`HTTP Request Error: ${error.message} (status: ${error.response?.status})`);
     }
   }
+
 
   async connect(): Promise<any> {
     this.route = Routes.INSTANCES;
