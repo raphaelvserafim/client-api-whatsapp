@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { Init, HttpMethod, WebhookBody, Routes, TypeMessage, StatusPresence, Contact, Section } from './model';
+import { Init, HttpMethod, WebhookBody, Routes, TypeMessage, StatusPresence, Contact, Section, InfoInstance, SendMessageRoot } from './model';
 
 export class WhatsApp {
   private readonly server: string;
@@ -42,7 +42,7 @@ export class WhatsApp {
     return await this.request();
   }
 
-  async info(): Promise<any> {
+  async info(): Promise<InfoInstance> {
     this.route = Routes.INSTANCES;
     this.method = HttpMethod.GET;
     return await this.request();
@@ -54,12 +54,12 @@ export class WhatsApp {
     return await this.request();
   }
 
-  async setting(markMessageRead: boolean, saveMedia: boolean): Promise<any> {
-    this.route = Routes.INSTANCES + `/?markMessageRead=${markMessageRead}&saveMedia=${saveMedia}`;
+
+  async setting(markMessageRead: boolean, saveMedia: boolean, receiveStatusMessage: boolean): Promise<any> {
+    this.route = Routes.INSTANCES + `/?markMessageRead=${markMessageRead}&saveMedia=${saveMedia}&receiveStatusMessage=${receiveStatusMessage}`;
     this.method = HttpMethod.PATCH;
     return await this.request();
   }
-
 
 
   async updateWebhook(body: WebhookBody): Promise<any> {
@@ -94,7 +94,7 @@ export class WhatsApp {
         thumbnailUrl?: string,
         sourceUrl?: string,
       }
-    }, reply: boolean = false): Promise<any> {
+    }, reply: boolean = false): Promise<SendMessageRoot> {
     if (reply) {
       this.route = Routes.MESSAGES + "/" + data.body.msgId + "/" + data.type;
     } else {
@@ -103,6 +103,31 @@ export class WhatsApp {
 
     this.method = HttpMethod.POST;
     this.body = data.body;
+    return await this.request();
+  }
+
+
+  async forwardingMessage(to: string, msgId: string) {
+    this.route = Routes.MESSAGES + "/" + msgId + "/forwarding";
+    this.method = HttpMethod.POST;
+    this.body = {
+      to,
+    }
+    return await this.request();
+  }
+
+  async rejectCall(id: string, from: string) {
+    this.route = Routes.CALL + `/${id}/${from}`;
+    this.method = HttpMethod.DELETE;
+    return await this.request();
+  }
+
+  async pairingCode(phoneNumber: string) {
+    this.route = Routes.INSTANCES + "/pairing-code";
+    this.body = {
+      phoneNumber,
+    }
+    this.method = HttpMethod.POST;
     return await this.request();
   }
 
@@ -139,12 +164,29 @@ export class WhatsApp {
     return await this.request();
   }
 
+  async getInviteGroup(id: string) {
+    this.route = Routes.GROUPS + "/" + id + "/invite";
+    this.method = HttpMethod.GET;
+    return await this.request();
+  }
+
+
+
   async updateGroup(id: string, name: string, description: string) {
     this.route = Routes.GROUPS + "/" + id;
     this.method = HttpMethod.PUT;
     this.body = {
       name,
       description
+    }
+    return await this.request();
+  }
+
+  async updateGroupPicture(id: string, url: string) {
+    this.route = Routes.GROUPS + "/" + id + "/picture";
+    this.method = HttpMethod.PUT;
+    this.body = {
+      url
     }
     return await this.request();
   }
@@ -160,6 +202,16 @@ export class WhatsApp {
     this.method = HttpMethod.POST;
     this.body = {
       name,
+      participants
+    }
+    return await this.request();
+  }
+
+
+  async addParticipantsGroup(id: string, participants: string[]) {
+    this.route = Routes.GROUPS + "/" + id + "/participants";
+    this.method = HttpMethod.POST;
+    this.body = {
       participants
     }
     return await this.request();

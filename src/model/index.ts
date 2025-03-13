@@ -18,6 +18,7 @@ export enum Routes {
   CONTACTS = 'contacts',
   GROUPS = 'groups',
   ACTIONS = 'actions',
+  CALL = 'call',
 }
 
 
@@ -32,6 +33,7 @@ export enum TypeMessage {
   LOCATION = 'location',
   REACTION = 'reaction',
   LINK = 'link',
+  TITLE = 'title',
 }
 
 
@@ -77,4 +79,66 @@ export interface Row {
 export interface Section {
   title: string;
   rows: Row[];
+}
+
+
+
+
+
+export interface InfoInstance {
+  status: number
+  instance: Instance
+}
+
+export interface Instance {
+  receive_status_message: boolean
+  save_media: boolean
+  mark_messages: boolean
+  blocked: boolean
+  user: User
+  phoneConnected: boolean
+  webhook: Webhook
+}
+
+export interface User {
+  id: string
+  lid: string
+}
+
+export interface Webhook {
+  allowWebhook: boolean
+  webhookMessage: string
+  webhookGroup: string
+  webhookConnection: string
+  webhookQrCode: string
+  webhookMessageFromMe: string
+  webhookHistory: string
+}
+
+
+
+export interface SendMessageRoot {
+  status: number
+  data: Data
+}
+
+export interface Data {
+  key: Key
+  message: Message
+  messageTimestamp: string
+  status: string
+}
+
+export interface Key {
+  remoteJid: string
+  fromMe: boolean
+  id: string
+}
+
+export interface Message {
+  extendedTextMessage: ExtendedTextMessage
+}
+
+export interface ExtendedTextMessage {
+  text: string
 }
