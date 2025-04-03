@@ -34,6 +34,11 @@ export enum TypeMessage {
   REACTION = 'reaction',
   LINK = 'link',
   TITLE = 'title',
+  BUTTON_REPLY = 'button_reply',
+  BUTTON_ACTION = 'button_action',
+  BUTTON_PIX = 'pix',
+  POLL = 'survey',
+  MENU = 'list',
 }
 
 
@@ -83,8 +88,6 @@ export interface Section {
 
 
 
-
-
 export interface InfoInstance {
   status: number
   instance: Instance
@@ -93,16 +96,22 @@ export interface InfoInstance {
 export interface Instance {
   receive_status_message: boolean
   save_media: boolean
+  receive_presence: boolean
+  permission: number
   mark_messages: boolean
   blocked: boolean
-  user: User
+  user?: User
   phoneConnected: boolean
-  webhook: Webhook
+  webhook: Webhook;
+  businessProfile?: BusinessProfile;
 }
 
 export interface User {
-  id: string
-  lid: string
+  id?: string;
+  lid?: string;
+  name?: string;
+  imageProfile?: string;
+
 }
 
 export interface Webhook {
@@ -141,4 +150,41 @@ export interface Message {
 
 export interface ExtendedTextMessage {
   text: string
+}
+
+export interface Connect {
+  status: number;
+  phoneConnected: boolean;
+  qrcode: string;
+  image: string;
+  user?: User;
+}
+
+
+
+export interface BusinessProfile {
+  wid: string
+  description: string
+  website: any[]
+  category: string
+  business_hours: {}
+}
+
+
+
+export interface Buttons {
+  type: "quick_reply" | "cta_copy" | "cta_url" | "cta_call",
+  copy_code?: string,
+  phone_number?: string,
+  url?: string,
+  id?: string,
+  text: string;
+}
+
+
+export interface Items {
+  id: string,
+  name: string,
+  price: number,
+  quantity: number
 }
