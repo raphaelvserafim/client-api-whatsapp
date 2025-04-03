@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { Init, HttpMethod, WebhookBody, Routes, TypeMessage, StatusPresence, Contact, Section, InfoInstance, SendMessageRoot } from './model';
+import { Init, HttpMethod, WebhookBody, Routes, TypeMessage, StatusPresence, Contact, Section, InfoInstance, SendMessageRoot, Connect, Location, Buttons, Items } from './types';
 
 export class WhatsApp {
   private readonly server: string;
@@ -36,7 +36,7 @@ export class WhatsApp {
   }
 
 
-  async connect(): Promise<any> {
+  async connect(): Promise<Connect> {
     this.route = Routes.INSTANCES;
     this.method = HttpMethod.POST;
     return await this.request();
@@ -55,8 +55,8 @@ export class WhatsApp {
   }
 
 
-  async setting(markMessageRead: boolean, saveMedia: boolean, receiveStatusMessage: boolean): Promise<any> {
-    this.route = Routes.INSTANCES + `/?markMessageRead=${markMessageRead}&saveMedia=${saveMedia}&receiveStatusMessage=${receiveStatusMessage}`;
+  async setting(markMessageRead: boolean, saveMedia: boolean, receiveStatusMessage: boolean, receivePresence: boolean): Promise<{ status: number, message: string }> {
+    this.route = Routes.INSTANCES + `/?markMessageRead=${markMessageRead}&saveMedia=${saveMedia}&receiveStatusMessage=${receiveStatusMessage}&receivePresence=${receivePresence}`;
     this.method = HttpMethod.PATCH;
     return await this.request();
   }
@@ -76,6 +76,9 @@ export class WhatsApp {
       body: {
         to: string,
         msgId?: string,
+        header?: {
+          title?: string,
+        },
         status?: StatusPresence,
         text?: string,
         url?: string,
@@ -86,15 +89,32 @@ export class WhatsApp {
         location?: Location,
         name?: string,
         options?: string[],
-        sections?: Section,
+        sections?: Section[],
+        buttons?: Buttons[],
         footer?: string,
         description?: string,
         title?: string,
         buttonText?: string,
         thumbnailUrl?: string,
         sourceUrl?: string,
+        referenceId?: string,
+        code?: string,
+        key?: string,
+        merchantName?: string,
+        keyType?: "CNPJ" | "CPF" | "EMAIL" | "PHONE",
+        subtotal?: string,
+        totalAmount?: string,
+        items?: Items[],
       }
     }, reply: boolean = false): Promise<SendMessageRoot> {
+
+    if (data.type === TypeMessage.BUTTON_PIX) {
+      const { key, keyType, merchantName, subtotal, totalAmount, items } = data.body;
+      if (!key || !keyType || !merchantName || !subtotal || !totalAmount || !items || items.length === 0) {
+        throw new Error("Campos obrigatórios para pagamento via PIX estão ausentes.");
+      }
+    }
+
     if (reply) {
       this.route = Routes.MESSAGES + "/" + data.body.msgId + "/" + data.type;
     } else {
