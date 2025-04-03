@@ -98,6 +98,148 @@ whatsapp.sendMessage({
 }).catch(console.error)
 ```
 
+
+### Cobrança Pix
+```js
+whatsapp.sendMessage({
+  type: TypeMessage.BUTTON_PIX,
+  body:  {
+  to: "14375223417",
+  title: "Pizza",
+  text: "Pizza ",
+  referenceId: "apiwame",
+  code: "0020",
+  key: "23711695000115",
+  merchantName: "CACHE SISTEMAS WEB",
+  keyType: "CNPJ",
+  items: [
+    {
+      id: "123",
+      name: "Pizza G",
+      price: 10,
+      quantity: 10
+    },
+  ],
+  subtotal: "90",
+  totalAmount: "100"
+}
+}).then((response) => {
+ console.log(response)
+}).catch(console.error)
+```
+
+
+### Buttons Reply
+```js
+whatsapp.sendMessage({
+  type: TypeMessage.BUTTON_REPLY,
+  body: {
+  to: "14375223417",
+  header: {
+    title: "Example Header",
+  },
+  text: "This is a test",
+  footer: "choose an option",
+  buttons: [
+    {
+      type: "quick_reply",
+      id: "uniqId1",
+      text: "Yes"
+    },
+    {
+      type: "quick_reply",
+      id: "uniqId2",
+      text: "No"
+    }
+  ]
+}
+}).then((response) => {
+ console.log(response)
+}).catch(console.error)
+```
+
+
+### Buttons ACTION
+```js
+whatsapp.sendMessage({
+  type: TypeMessage.BUTTON_ACTION,
+  body: {
+  to: "14375223417",
+  header: {
+    title: "Example Header",
+  },
+  text: "This is a test",
+  footer: "choose an option",
+  buttons: [
+   {
+      type: "cta_copy",
+      copy_code: "1234567890",
+      text: "Copy barcode"
+    },
+    {
+      type: "cta_url",
+      url: "https://api-wa.me",
+      text: "Access the website"
+    },
+    {
+      type: "cta_call",
+      phone_number: "+5566996852025",
+      text: "Call us"
+    }
+  ]
+}
+}).then((response) => {
+ console.log(response)
+}).catch(console.error)
+```
+
+
+### List Menu
+```js
+whatsapp.sendMessage({
+  type: TypeMessage.MENU,
+  body: {
+  to: "14375223417",
+  buttonText: "Menu",
+  text: "string",
+  title: "Menu",
+  description: "Description",
+  footer: "footer",
+  sections: [
+    {
+      title: "Pizza",
+      rows: [
+        {
+          title: "Pizza 01",
+          description: "Example pizza 01",
+          rowId: "1"
+        }
+      ]
+    }
+  ]
+}
+}).then((response) => {
+ console.log(response)
+}).catch(console.error)
+```
+
+### POLL
+```js
+whatsapp.sendMessage({
+  type: TypeMessage.POLL,
+  body: {
+  to: "14375223417",
+  name: "Do you like PHP?",
+  options: [
+    "Yes",
+    "No"
+  ],
+}
+}).then((response) => {
+ console.log(response)
+}).catch(console.error)
+```
+
 ### Link
 ```js
 whatsapp.sendMessage({
