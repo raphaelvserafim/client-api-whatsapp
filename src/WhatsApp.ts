@@ -55,7 +55,7 @@ export class WhatsApp {
   }
 
 
-  async setting(markMessageRead: boolean, saveMedia: boolean, receiveStatusMessage: boolean, receivePresence: boolean): Promise<{ status: number, message: string }> {
+  async setting({ markMessageRead, saveMedia, receiveStatusMessage, receivePresence }: { markMessageRead: boolean, receiveStatusMessage: boolean, receivePresence: boolean; saveMedia: boolean, }): Promise<{ status: number, message: string }> {
     this.route = Routes.INSTANCES + `/?markMessageRead=${markMessageRead}&saveMedia=${saveMedia}&receiveStatusMessage=${receiveStatusMessage}&receivePresence=${receivePresence}`;
     this.method = HttpMethod.PATCH;
     return await this.request();
