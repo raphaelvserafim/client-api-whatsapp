@@ -1,15 +1,12 @@
 {
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-      "baseUrl": ".",
-      "outDir": "./dist",
-      "moduleResolution": "node",
-      "declaration": true,
-      "noResolve": false,
-      "preserveConstEnums": true,
-      "sourceMap": true,
-      "noEmit": false,
-      "emitDeclarationOnly": false,
-      "inlineSources": true
-    }
-  }
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "declaration": true,
+    "noEmit": false,
+    "sourceMap": true,
+    "inlineSources": true
+  },
+  "exclude": ["src/example.ts"]
+}
