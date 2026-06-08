@@ -1,0 +1,874 @@
+# @raphaelvserafim/client-api-whatsapp
+> With our API, you can send text, audio, video, and image messages quickly and easily. Adapt to your business communication needs comprehensively.
+Version: 1.3.0
+
+## Installation
+npm i @raphaelvserafim/client-api-whatsapp
+
+## Initialization
+import { WhatsApp, TypeMessage, StatusPresence } from '@raphaelvserafim/client-api-whatsapp';
+const wa = new WhatsApp({ server: "https://us.api-wa.me", key: "YOUR_KEY" });
+
+## Available Services
+- wa.instance → InstanceService
+- wa.message → MessageService
+- wa.chat → ChatService
+- wa.call → CallService
+- wa.label → LabelService
+- wa.action → ActionService
+- wa.contact → ContactService
+- wa.group → GroupService
+- wa.community → CommunityService
+- wa.business → BusinessService
+- wa.newsletter → NewsletterService
+- wa.status → StatusService
+
+## wa.instance
+// connect(): Promise<Connect>
+await wa.instance.connect();
+
+// info(): Promise<InfoInstance>
+await wa.instance.info();
+
+// logout(): Promise<ApiResponse>
+await wa.instance.logout();
+
+// setting(data: { markMessageRead: boolean; saveMedia: boolean; receiveStatusMessage: boolean; receivePresence: boolean }): Promise<ApiResponse>
+await wa.instance.setting({ /* data */ });
+
+// updateWebhook(body: WebhookBody): Promise<ApiResponse>
+await wa.instance.updateWebhook({ /* WebhookBody */ });
+
+// pairingCode(phoneNumber: string): Promise<PairingCodeResponse>
+await wa.instance.pairingCode("phoneNumber");
+
+// addMongoDb(uri: string, dbName: string): Promise<ApiResponse>
+await wa.instance.addMongoDb("uri", "dbName");
+
+// setProxy(proxy: string): Promise<ApiResponse>
+await wa.instance.setProxy("proxy");
+
+// resync(): Promise<ApiResponse>
+await wa.instance.resync();
+
+// restart(): Promise<ApiResponse>
+await wa.instance.restart();
+
+// updateProfileStatus(text: string): Promise<ApiResponse>
+await wa.instance.updateProfileStatus("text");
+
+// updateProfilePicture(url: string): Promise<ApiResponse>
+await wa.instance.updateProfilePicture("url");
+
+// removeProfilePicture(): Promise<ApiResponse>
+await wa.instance.removeProfilePicture();
+
+// updateProfileName(name: string): Promise<ApiResponse>
+await wa.instance.updateProfileName("name");
+
+// mobileRegisterPrepare(data: MobileRegisterData): Promise<ApiResponse>
+await wa.instance.mobileRegisterPrepare({ /* MobileRegisterData */ });
+
+// mobileRequestCode(method: string): Promise<ApiResponse>
+await wa.instance.mobileRequestCode("method");
+
+// mobileVerifyCode(code: string): Promise<ApiResponse>
+await wa.instance.mobileVerifyCode("code");
+
+// webhookStatistics(): Promise<WebhookStatistics>
+await wa.instance.webhookStatistics();
+
+## wa.message
+// list(phoneNumber: string, page?: number, limit?: number): Promise<ListMessagesResponse>
+await wa.message.list("phoneNumber", 0, 0);
+
+// send(data: {
+      type: TypeMessage;
+      body: {
+        to: string;
+        msgId?: string;
+        header?: HeaderMedia;
+        status?: StatusPresence;
+        text?: string;
+        url?: string;
+        caption?: string;
+        mimetype?: string;
+        fileName?: string;
+        contact?: Contact;
+        location?: Location;
+        name?: string;
+        options?: string[];
+        sections?: Section[];
+        buttons?: Buttons[];
+        footer?: string;
+        description?: string;
+        title?: string;
+        buttonText?: string;
+        thumbnailUrl?: string;
+        sourceUrl?: string;
+        referenceId?: string;
+        code?: string;
+        key?: string;
+        merchantName?: string;
+        keyType?: "CNPJ" | "CPF" | "EMAIL" | "PHONE";
+        subtotal?: string;
+        totalAmount?: string;
+        items?: Items[];
+      };
+    }, reply?: boolean): Promise<SendMessageRoot>
+await wa.message.send({ /* data */ }, false);
+
+// forward(to: string, msgId: string): Promise<SendMessageRoot>
+await wa.message.forward("to", "msgId");
+
+// sendSticker(to: string, url: string): Promise<SendMessageRoot>
+await wa.message.sendSticker("to", "url");
+
+// sendVideoNote(to: string, url: string): Promise<SendMessageRoot>
+await wa.message.sendVideoNote("to", "url");
+
+// sendPoll(to: string, name: string, values: Array<string | number | boolean>, selectableCount?: number): Promise<SendMessageRoot>
+await wa.message.sendPoll("to", "name", [], 0);
+
+// sendEvent(data: EventData): Promise<SendMessageRoot>
+await wa.message.sendEvent({ /* EventData */ });
+
+// pin(id: string, duration?: number): Promise<ApiResponse>
+await wa.message.pin("id", 0);
+
+// sendCallLink(to: string, type: string, caption?: string): Promise<SendMessageRoot>
+await wa.message.sendCallLink("to", "type", "caption");
+
+// sendImageBase64(to: string, base64: string, caption?: string): Promise<SendMessageRoot>
+await wa.message.sendImageBase64("to", "base64", "caption");
+
+// sendAudioBase64(to: string, base64: string): Promise<SendMessageRoot>
+await wa.message.sendAudioBase64("to", "base64");
+
+// sendDocumentBase64(to: string, base64: string, mimetype: string, fileName?: string, caption?: string): Promise<SendMessageRoot>
+await wa.message.sendDocumentBase64("to", "base64", "mimetype", "fileName", "caption");
+
+// sendContacts(data: SendContactsData): Promise<SendMessageRoot>
+await wa.message.sendContacts({ /* SendContactsData */ });
+
+// sendLiveLocation(data: LiveLocationData): Promise<SendMessageRoot>
+await wa.message.sendLiveLocation({ /* LiveLocationData */ });
+
+// unpin(id: string): Promise<ApiResponse>
+await wa.message.unpin("id");
+
+// getDetails(messageId: string): Promise<ApiResponse>
+await wa.message.getDetails("messageId");
+
+// getMedia(messageId: string, format?: string): Promise<ApiResponse>
+await wa.message.getMedia("messageId", "format");
+
+// sendProduct(data: ProductMessageData): Promise<SendMessageRoot>
+await wa.message.sendProduct({ /* ProductMessageData */ });
+
+// sendGroupInvite(data: GroupInviteMessageData): Promise<SendMessageRoot>
+await wa.message.sendGroupInvite({ /* GroupInviteMessageData */ });
+
+// requestPhone(to: string): Promise<ApiResponse>
+await wa.message.requestPhone("to");
+
+// createCallLink(type: string): Promise<ApiResponse>
+await wa.message.createCallLink("type");
+
+## wa.chat
+// list(): Promise<{ status: number; data: ChatInfo[] }>
+await wa.chat.list();
+
+// modify(id: string, action: 'markRead' | 'pin', value: boolean): Promise<ApiResponse>
+await wa.chat.modify("id", "markRead", false);
+
+// delete(chatId: string): Promise<ApiResponse>
+await wa.chat.delete("chatId");
+
+// messages(chatId: string, page?: number, limit?: number): Promise<{ status: number; data: MessageData[] }>
+await wa.chat.messages("chatId", 0, 0);
+
+// presenceSubscribe(jid: string): Promise<ApiResponse>
+await wa.chat.presenceSubscribe("jid");
+
+// disappearing(jid: string, expiration: number): Promise<ApiResponse>
+await wa.chat.disappearing("jid", 0);
+
+// privacy(): Promise<ApiResponse>
+await wa.chat.privacy();
+
+## wa.call
+// call(to: string, isVideo?: boolean): Promise<CallResponse>
+await wa.call.call("to", false);
+
+// reject(id: string, from: string): Promise<ApiResponse>
+await wa.call.reject("id", "from");
+
+// accept(callId: string, callFrom: string): Promise<ApiResponse>
+await wa.call.accept("callId", "callFrom");
+
+// end(callId: string, peerJid: string): Promise<ApiResponse>
+await wa.call.end("callId", "peerJid");
+
+## wa.label
+// list(): Promise<{ status: number; data: LabelInfo[] }>
+await wa.label.list();
+
+// create(name: string, labelId?: string): Promise<ApiResponse>
+await wa.label.create("name", "labelId");
+
+// getChats(labelId: string): Promise<{ status: number; data: ChatInfo[] }>
+await wa.label.getChats("labelId");
+
+// addToChat(labelId: string, to: string): Promise<ApiResponse>
+await wa.label.addToChat("labelId", "to");
+
+// delete(labelId: string): Promise<ApiResponse>
+await wa.label.delete("labelId");
+
+// removeFromChat(labelId: string, to: string): Promise<ApiResponse>
+await wa.label.removeFromChat("labelId", "to");
+
+## wa.action
+// checkRegistered(number: string): Promise<RegisteredResponse>
+await wa.action.checkRegistered("number");
+
+// downloadMedia(type: 'image' | 'video' | 'sticker' | 'audio' | 'document', message: DownloadableMessage): Promise<DownloadMediaResponse>
+await wa.action.downloadMedia("image", { /* DownloadableMessage */ });
+
+// deleteStorage(): Promise<ApiResponse>
+await wa.action.deleteStorage();
+
+## wa.contact
+// list(): Promise<{ status: number; data: ContactInfo[] }>
+await wa.contact.list();
+
+// profile(id: string): Promise<{ status: number; data: ContactInfo }>
+await wa.contact.profile("id");
+
+// add(number: string, name: string): Promise<ApiResponse>
+await wa.contact.add("number", "name");
+
+// remove(number: string): Promise<ApiResponse>
+await wa.contact.remove("number");
+
+// block(number: string, action: 'block' | 'unblock'): Promise<ApiResponse>
+await wa.contact.block("number", "block");
+
+// clearSession(number: string): Promise<ApiResponse>
+await wa.contact.clearSession("number");
+
+// getStatus(number: string): Promise<ApiResponse>
+await wa.contact.getStatus("number");
+
+// listBlocked(): Promise<ApiResponse>
+await wa.contact.listBlocked();
+
+// resolveLids(lids: string[]): Promise<ApiResponse>
+await wa.contact.resolveLids([]);
+
+## wa.group
+// list(): Promise<{ status: number; data: GroupInfo[] }>
+await wa.group.list();
+
+// info(id: string): Promise<{ status: number; data: GroupInfo }>
+await wa.group.info("id");
+
+// create(name: string, participants: string[]): Promise<{ status: number; data: GroupInfo }>
+await wa.group.create("name", []);
+
+// update(id: string, name: string, description: string): Promise<ApiResponse>
+await wa.group.update("id", "name", "description");
+
+// changeSettings(id: string, setting: 'announcement' | 'not_announcement' | 'locked' | 'unlocked'): Promise<ApiResponse>
+await wa.group.changeSettings("id", "announcement");
+
+// leave(id: string): Promise<ApiResponse>
+await wa.group.leave("id");
+
+// getMembers(id: string): Promise<{ status: number; data: GroupParticipant[] }>
+await wa.group.getMembers("id");
+
+// getInviteInfo(code: string): Promise<ApiResponse>
+await wa.group.getInviteInfo("code");
+
+// getInviteCode(id: string): Promise<InviteCodeResponse>
+await wa.group.getInviteCode("id");
+
+// updatePicture(id: string, url: string): Promise<ApiResponse>
+await wa.group.updatePicture("id", "url");
+
+// removePicture(id: string): Promise<ApiResponse>
+await wa.group.removePicture("id");
+
+// addParticipants(id: string, participants: string[]): Promise<ApiResponse>
+await wa.group.addParticipants("id", []);
+
+// removeParticipants(id: string, participants: string[]): Promise<ApiResponse>
+await wa.group.removeParticipants("id", []);
+
+// updateParticipantRole(id: string, action: 'promote' | 'demote', participants: string[]): Promise<ApiResponse>
+await wa.group.updateParticipantRole("id", "promote", []);
+
+// getRequestParticipants(id: string): Promise<{ status: number; data: GroupParticipant[] }>
+await wa.group.getRequestParticipants("id");
+
+// updateRequestParticipants(id: string, data: GroupParticipantsAction): Promise<ApiResponse>
+await wa.group.updateRequestParticipants("id", { /* GroupParticipantsAction */ });
+
+## wa.community
+// list(): Promise<{ status: number; data: CommunityInfo[] }>
+await wa.community.list();
+
+// create(data: CommunityCreate): Promise<{ status: number; data: CommunityInfo }>
+await wa.community.create({ /* CommunityCreate */ });
+
+// info(id: string): Promise<{ status: number; data: CommunityInfo }>
+await wa.community.info("id");
+
+// update(id: string, data: CommunityUpdate): Promise<ApiResponse>
+await wa.community.update("id", { /* CommunityUpdate */ });
+
+// leave(id: string): Promise<ApiResponse>
+await wa.community.leave("id");
+
+// updatePicture(id: string, url: string): Promise<ApiResponse>
+await wa.community.updatePicture("id", "url");
+
+// getInviteCode(id: string): Promise<InviteCodeResponse>
+await wa.community.getInviteCode("id");
+
+// removeParticipants(id: string, participants: string[]): Promise<ApiResponse>
+await wa.community.removeParticipants("id", []);
+
+// getRequestParticipants(id: string): Promise<{ status: number; data: GroupParticipant[] }>
+await wa.community.getRequestParticipants("id");
+
+// updateRequestParticipants(id: string, data: GroupParticipantsAction): Promise<ApiResponse>
+await wa.community.updateRequestParticipants("id", { /* GroupParticipantsAction */ });
+
+// acceptInvite(code: string): Promise<ApiResponse>
+await wa.community.acceptInvite("code");
+
+// getInviteInfo(code: string): Promise<ApiResponse>
+await wa.community.getInviteInfo("code");
+
+// createGroup(id: string, data: CommunityGroupCreate): Promise<ApiResponse>
+await wa.community.createGroup("id", { /* CommunityGroupCreate */ });
+
+// ephemeral(id: string, expiration: number): Promise<ApiResponse>
+await wa.community.ephemeral("id", 0);
+
+// updateSettings(id: string, setting: string): Promise<ApiResponse>
+await wa.community.updateSettings("id", "setting");
+
+// memberAddMode(id: string, mode: string): Promise<ApiResponse>
+await wa.community.memberAddMode("id", "mode");
+
+// joinApproval(id: string, mode: string): Promise<ApiResponse>
+await wa.community.joinApproval("id", "mode");
+
+## wa.business
+// getCatalog(limit?: number, cursor?: string): Promise<CatalogResponse>
+await wa.business.getCatalog(0, "cursor");
+
+// createProduct(product: Product): Promise<ApiResponse>
+await wa.business.createProduct({ /* Product */ });
+
+// updateProduct(productId: string, product: Product): Promise<ApiResponse>
+await wa.business.updateProduct("productId", { /* Product */ });
+
+// deleteProduct(productId: string): Promise<ApiResponse>
+await wa.business.deleteProduct("productId");
+
+## wa.newsletter
+// create(name: string, description?: string): Promise<ApiResponse>
+await wa.newsletter.create("name", "description");
+
+// getMetadata(type: string, id: string): Promise<ApiResponse>
+await wa.newsletter.getMetadata("type", "id");
+
+// getSubscribers(id: string): Promise<ApiResponse>
+await wa.newsletter.getSubscribers("id");
+
+// getAdmins(id: string): Promise<ApiResponse>
+await wa.newsletter.getAdmins("id");
+
+// follow(id: string): Promise<ApiResponse>
+await wa.newsletter.follow("id");
+
+// unfollow(id: string): Promise<ApiResponse>
+await wa.newsletter.unfollow("id");
+
+// updateName(id: string, name: string): Promise<ApiResponse>
+await wa.newsletter.updateName("id", "name");
+
+// updateDescription(id: string, description: string): Promise<ApiResponse>
+await wa.newsletter.updateDescription("id", "description");
+
+// updatePicture(id: string, url: string): Promise<ApiResponse>
+await wa.newsletter.updatePicture("id", "url");
+
+// removePicture(id: string): Promise<ApiResponse>
+await wa.newsletter.removePicture("id");
+
+// transferOwnership(id: string, newOwnerJid: string): Promise<ApiResponse>
+await wa.newsletter.transferOwnership("id", "newOwnerJid");
+
+// demoteAdmin(id: string, userJid: string): Promise<ApiResponse>
+await wa.newsletter.demoteAdmin("id", "userJid");
+
+// getMessages(id: string, count?: number, since?: number, after?: number): Promise<ApiResponse>
+await wa.newsletter.getMessages("id", 0, 0, 0);
+
+// react(id: string, serverId: string, reaction: string): Promise<ApiResponse>
+await wa.newsletter.react("id", "serverId", "reaction");
+
+// mute(id: string): Promise<ApiResponse>
+await wa.newsletter.mute("id");
+
+// unmute(id: string): Promise<ApiResponse>
+await wa.newsletter.unmute("id");
+
+// delete(id: string): Promise<ApiResponse>
+await wa.newsletter.delete("id");
+
+## wa.status
+// sendText(data: StatusTextData): Promise<ApiResponse>
+await wa.status.sendText({ /* StatusTextData */ });
+
+// sendImage(data: StatusMediaData): Promise<ApiResponse>
+await wa.status.sendImage({ /* StatusMediaData */ });
+
+// sendVideo(data: StatusMediaData): Promise<ApiResponse>
+await wa.status.sendVideo({ /* StatusMediaData */ });
+
+// sendAudio(data: { url: string; statusJidList?: string[] }): Promise<ApiResponse>
+await wa.status.sendAudio({ /* data */ });
+
+// mention(data: StatusMentionData): Promise<ApiResponse>
+await wa.status.mention({ /* StatusMentionData */ });
+
+## Type Definitions
+```typescript
+export interface Init {
+  server: string;
+  key: string;
+}
+
+export enum HttpMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  DELETE = 'DELETE',
+  PATCH = 'PATCH',
+}
+
+export enum Routes {
+  INSTANCES = 'instance',
+  MESSAGES = 'message',
+  CONTACTS = 'contacts',
+  GROUPS = 'groups',
+  ACTIONS = 'actions',
+  CALL = 'call',
+  CHAT = 'chat',
+  LABELS = 'labels',
+  COMMUNITY = 'community',
+  BUSINESS = 'business',
+  NEWSLETTER = 'newsletter',
+  STATUS = 'status',
+}
+
+export enum TypeMessage {
+  PRESENCE = 'presence',
+  TEXT = 'text',
+  AUDIO = 'audio',
+  IMAGE = 'image',
+  VIDEO = 'video',
+  DOCUMENT = 'document',
+  CONTACT = 'contact',
+  LOCATION = 'location',
+  REACTION = 'reaction',
+  LINK = 'link',
+  TITLE = 'title',
+  BUTTON_REPLY = 'button_reply',
+  BUTTON_ACTION = 'button_action',
+  BUTTON_PIX = 'pix',
+  POLL = 'survey',
+  MENU = 'list',
+  STICKER = 'sticker',
+  VIDEO_NOTE = 'video-note',
+  POLL_V2 = 'poll',
+  EVENT = 'event',
+  PIN = 'pin',
+  CALL_LINK = 'call-link',
+}
+
+export enum StatusPresence {
+  UNAVAILABLE = 'unavailable',
+  AVAILABLE = 'available',
+  COMPOSING = 'composing',
+  RECORDING = 'recording',
+  PAUSED = 'paused',
+}
+
+export interface ApiResponse {
+  status: number;
+  message: string;
+}
+
+export interface WebhookBody {
+  allowWebhook: boolean;
+  allowNumber?: string;
+  webhookMessage: string;
+  webhookGroup: string;
+  webhookConnection: string;
+  webhookQrCode: string;
+  webhookMessageFromMe: string;
+  webhookHistory: string;
+}
+
+export interface Contact {
+  fullName: string;
+  phoneNumber: string;
+  organization?: string;
+}
+
+export interface Location {
+  latitude: number;
+  longitude: number;
+  address: string;
+}
+
+export interface Row {
+  title: string;
+  description: string;
+  rowId: string;
+}
+
+export interface Section {
+  title: string;
+  rows: Row[];
+}
+
+export interface InfoInstance {
+  status: number;
+  instance: Instance;
+}
+
+export interface Instance {
+  receive_status_message: boolean;
+  save_media: boolean;
+  receive_presence: boolean;
+  permission: number;
+  mark_messages: boolean;
+  blocked: boolean;
+  user?: User;
+  phoneConnected: boolean;
+  webhook: Webhook;
+  businessProfile?: BusinessProfile;
+}
+
+export interface User {
+  id?: string;
+  lid?: string;
+  name?: string;
+  imageProfile?: string;
+}
+
+export interface Webhook {
+  allowWebhook: boolean;
+  allowNumber?: string;
+  webhookMessage: string;
+  webhookGroup: string;
+  webhookConnection: string;
+  webhookQrCode: string;
+  webhookMessageFromMe: string;
+  webhookHistory: string;
+}
+
+export interface SendMessageRoot {
+  status: number;
+  data: MessageData;
+}
+
+export interface MessageData {
+  key: MessageKey;
+  message: MessageContent;
+  messageTimestamp: string;
+  status: string;
+}
+
+export interface MessageKey {
+  remoteJid: string;
+  fromMe: boolean;
+  id: string;
+}
+
+export interface MessageContent {
+  extendedTextMessage?: ExtendedTextMessage;
+}
+
+export interface ExtendedTextMessage {
+  text: string;
+}
+
+export interface Connect {
+  status: number;
+  phoneConnected: boolean;
+  qrcode: string;
+  image: string;
+  user?: User;
+}
+
+export interface PairingCodeResponse {
+  status: number;
+  code: string;
+}
+
+export interface BusinessProfile {
+  wid: string;
+  description: string;
+  website: string[];
+  category: string;
+  business_hours: Record<string, unknown>;
+}
+
+export interface Buttons {
+  type: "quick_reply" | "cta_copy" | "cta_url" | "cta_call";
+  copy_code?: string;
+  phone_number?: string;
+  url?: string;
+  id?: string;
+  text: string;
+}
+
+export interface Items {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface HeaderMedia {
+  title?: string;
+  hasMediaAttachment?: boolean;
+  imageMessage?: { url: string };
+  videoMessage?: { url: string };
+  documentMessage?: { url: string; mimetype?: string; fileName?: string };
+}
+
+export interface DownloadableMessage {
+  mediaKey: string;
+  directPath: string;
+  url: string;
+}
+
+export interface Product {
+  name: string;
+  description?: string;
+  originCountryCode?: string;
+  currency?: string;
+  price?: number;
+  images?: { url: string }[];
+}
+
+export interface CommunityCreate {
+  name: string;
+  subject: string;
+}
+
+export interface CommunityUpdate {
+  subject: string;
+  description: string;
+}
+
+export interface GroupParticipantsAction {
+  participants: string[];
+  action: 'reject' | 'approve';
+}
+
+export interface MobileRegisterData {
+  phoneNumberCountryCode: string;
+  phoneNumberNationalNumber: string;
+  phoneNumberMobileNetworkCode: string;
+}
+
+export interface EventData {
+  to: string;
+  name: string;
+  description?: string;
+  startTime?: string;
+  locationName?: string;
+  locationAddress?: string;
+}
+
+export interface RegisteredResponse {
+  status: number;
+  registered: boolean;
+}
+
+export interface ContactInfo {
+  id: string;
+  name?: string;
+  notify?: string;
+  imgUrl?: string;
+}
+
+export interface GroupInfo {
+  id: string;
+  subject: string;
+  owner: string;
+  creation: number;
+  desc?: string;
+  participants: GroupParticipant[];
+}
+
+export interface GroupParticipant {
+  id: string;
+  admin?: string;
+}
+
+export interface InviteCodeResponse {
+  status: number;
+  inviteCode: string;
+}
+
+export interface ChatInfo {
+  id: string;
+  name?: string;
+  timestamp?: number;
+  unreadCount?: number;
+}
+
+export interface LabelInfo {
+  id: string;
+  name: string;
+  color?: number;
+}
+
+export interface CommunityInfo {
+  id: string;
+  name: string;
+  subject?: string;
+  description?: string;
+  participants?: GroupParticipant[];
+}
+
+export interface CatalogResponse {
+  status: number;
+  data: Product[];
+  cursor?: string;
+}
+
+export interface WebhookStatistics {
+  status: number;
+  data: Record<string, unknown>;
+}
+
+export interface ListMessagesResponse {
+  status: number;
+  data: MessageData[];
+  page?: number;
+  limit?: number;
+  total?: number;
+}
+
+export interface DownloadMediaResponse {
+  status: number;
+  data: string;
+}
+
+export interface CallResponse {
+  status: number;
+  data: Record<string, unknown>;
+}
+
+export interface LiveLocationData {
+  to: string;
+  latitude: number;
+  longitude: number;
+  caption?: string;
+}
+
+export interface SendContactsData {
+  to: string;
+  displayName: string;
+  contacts: Contact[];
+}
+
+export interface ProductMessageData {
+  to: string;
+  businessOwnerJid: string;
+  productId: string;
+  catalogId: string;
+  body?: string;
+  footer?: string;
+}
+
+export interface GroupInviteMessageData {
+  to: string;
+  groupJid: string;
+  groupName: string;
+  inviteCode: string;
+  inviteExpiration?: number;
+  caption?: string;
+}
+
+export interface StatusTextData {
+  text: string;
+  statusJidList?: string[];
+}
+
+export interface StatusMediaData {
+  url: string;
+  caption?: string;
+  statusJidList?: string[];
+}
+
+export interface StatusMentionData {
+  jid: string;
+  statusMsgId: string;
+}
+
+export interface NewsletterInfo {
+  id: string;
+  name?: string;
+  description?: string;
+  subscribers?: number;
+}
+
+export interface CommunityGroupCreate {
+  subject: string;
+  participants?: string[];
+}
+```
+
+## Custom HTTP Client
+```typescript
+import { WhatsApp, IHttpClient, RequestOptions } from '@raphaelvserafim/client-api-whatsapp';
+
+class MyHttpClient implements IHttpClient {
+  async request<T>(options: RequestOptions): Promise<T> {
+    // your custom implementation (fetch, got, etc.)
+  }
+}
+
+const wa = new WhatsApp(
+  { server: "https://us.api-wa.me", key: "YOUR_KEY" },
+  new MyHttpClient()
+);
+```
+
+## Error Handling
+```typescript
+import { WhatsAppError } from '@raphaelvserafim/client-api-whatsapp';
+
+try {
+  await wa.message.send(data);
+} catch (err) {
+  if (err instanceof WhatsAppError) {
+    console.error(err.message);
+  }
+}
+```

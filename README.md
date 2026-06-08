@@ -106,7 +106,6 @@ await wa.instance.addMongoDb("mongodb+srv://...", "mydb");
 await wa.instance.mobileRegisterPrepare({
   phoneNumberCountryCode: "55",
   phoneNumberNationalNumber: "99999999999",
-  phoneNumberMobileCountryCode: "724",
   phoneNumberMobileNetworkCode: "11",
 });
 await wa.instance.mobileRequestCode("sms");
@@ -374,6 +373,37 @@ await wa.message.forward(to, "MESSAGE_ID");
 const messages = await wa.message.list("559999999999", 1, 20);
 ```
 
+### Additional Message Methods
+
+```ts
+// Unpin message
+await wa.message.unpin("MESSAGE_ID");
+
+// Send multiple contacts
+await wa.message.sendContacts({ to, displayName: "My Contacts", contacts: [{ fullName: "Name", phoneNumber: "559999999999" }] });
+
+// Send live location
+await wa.message.sendLiveLocation({ to, latitude: 37.7749, longitude: -122.4194, caption: "I'm here" });
+
+// Get message details
+await wa.message.getDetails("MESSAGE_ID");
+
+// Get message media
+await wa.message.getMedia("MESSAGE_ID", "base64");
+
+// Send product message
+await wa.message.sendProduct({ to, businessOwnerJid: "559999999999@s.whatsapp.net", productId: "product_id", catalogId: "catalog_id" });
+
+// Send group invite
+await wa.message.sendGroupInvite({ to, groupJid: "123456789@g.us", groupName: "Developers", inviteCode: "ABC123" });
+
+// Request phone number
+await wa.message.requestPhone(to);
+
+// Create call link (without sending)
+await wa.message.createCallLink("video");
+```
+
 ## Chat
 
 ```ts
@@ -391,6 +421,15 @@ await wa.chat.modify("559999999999@s.whatsapp.net", "pin", true);
 
 // Delete chat
 await wa.chat.delete("559999999999@s.whatsapp.net");
+
+// Subscribe to presence updates
+await wa.chat.presenceSubscribe("559999999999@s.whatsapp.net");
+
+// Set disappearing messages
+await wa.chat.disappearing("559999999999@s.whatsapp.net", 86400);
+
+// Get privacy settings
+const privacy = await wa.chat.privacy();
 ```
 
 ## Call
@@ -402,6 +441,12 @@ await wa.call.call(to, true);       // video
 
 // Reject a call
 await wa.call.reject("CALL_ID", "559999999999@s.whatsapp.net");
+
+// Accept a call
+await wa.call.accept("CALL_ID", "559999999999@s.whatsapp.net");
+
+// End a call
+await wa.call.end("CALL_ID", "559999999999@s.whatsapp.net");
 ```
 
 ## Labels
@@ -421,6 +466,9 @@ const labeled = await wa.label.getChats("label_id");
 
 // Remove label from chat
 await wa.label.removeFromChat("label_id", to);
+
+// Delete label
+await wa.label.delete("label_id");
 ```
 
 ## Contacts
@@ -438,6 +486,24 @@ await wa.contact.block("559999999999", "unblock");
 
 // Check if registered on WhatsApp
 const check = await wa.action.checkRegistered("559999999999");
+
+// Add contact
+await wa.contact.add("559999999999", "Raphael");
+
+// Remove contact
+await wa.contact.remove("559999999999");
+
+// Clear contact session
+await wa.contact.clearSession("559999999999");
+
+// Get contact status
+await wa.contact.getStatus("559999999999");
+
+// List blocked contacts
+const blocked = await wa.contact.listBlocked();
+
+// Resolve LIDs
+await wa.contact.resolveLids(["lid1", "lid2"]);
 ```
 
 ## Groups
@@ -483,6 +549,12 @@ await wa.group.updateRequestParticipants("123456789@g.us", {
 
 // Leave group
 await wa.group.leave("123456789@g.us");
+
+// Get group members
+const members = await wa.group.getMembers("123456789@g.us");
+
+// Get invite info from code
+const inviteInfo = await wa.group.getInviteInfo("INVITE_CODE");
 ```
 
 ## Community
@@ -516,6 +588,27 @@ await wa.community.updateRequestParticipants("community_id", {
 
 // Leave community
 await wa.community.leave("community_id");
+
+// Accept invite
+await wa.community.acceptInvite("INVITE_CODE");
+
+// Get invite info
+await wa.community.getInviteInfo("INVITE_CODE");
+
+// Create group inside community
+await wa.community.createGroup("community_id", { subject: "New Group", participants: ["559999999999"] });
+
+// Set ephemeral messages
+await wa.community.ephemeral("community_id", 86400);
+
+// Update community settings
+await wa.community.updateSettings("community_id", "announcement");
+
+// Set member add mode
+await wa.community.memberAddMode("community_id", "admin_add");
+
+// Set join approval mode
+await wa.community.joinApproval("community_id", "on");
 ```
 
 ## Business
@@ -543,6 +636,66 @@ await wa.business.updateProduct("product_id", {
 
 // Delete product
 await wa.business.deleteProduct("product_id");
+```
+
+## Newsletter
+
+```ts
+// Create a newsletter
+await wa.newsletter.create("My Newsletter", "Description");
+
+// Get metadata
+await wa.newsletter.getMetadata("type", "newsletter_id");
+
+// Get subscribers & admins
+await wa.newsletter.getSubscribers("newsletter_id");
+await wa.newsletter.getAdmins("newsletter_id");
+
+// Follow / Unfollow
+await wa.newsletter.follow("newsletter_id");
+await wa.newsletter.unfollow("newsletter_id");
+
+// Update
+await wa.newsletter.updateName("newsletter_id", "New Name");
+await wa.newsletter.updateDescription("newsletter_id", "New description");
+await wa.newsletter.updatePicture("newsletter_id", "https://example.com/pic.jpg");
+await wa.newsletter.removePicture("newsletter_id");
+
+// Transfer ownership & demote admin
+await wa.newsletter.transferOwnership("newsletter_id", "new_owner_jid");
+await wa.newsletter.demoteAdmin("newsletter_id", "user_jid");
+
+// Messages
+await wa.newsletter.getMessages("newsletter_id", 10);
+
+// React to a message
+await wa.newsletter.react("newsletter_id", "server_id", "👍");
+
+// Mute / Unmute
+await wa.newsletter.mute("newsletter_id");
+await wa.newsletter.unmute("newsletter_id");
+
+// Delete
+await wa.newsletter.delete("newsletter_id");
+```
+
+## Status
+
+```ts
+// Text status
+await wa.status.sendText({ text: "Hello World!", statusJidList: ["559999999999@s.whatsapp.net"] });
+
+// Image status
+await wa.status.sendImage({ url: "https://example.com/image.jpg", caption: "My photo", statusJidList: ["559999999999@s.whatsapp.net"] });
+
+// Video status
+await wa.status.sendVideo({ url: "https://example.com/video.mp4", caption: "My video" });
+
+// Audio status
+await wa.status.sendAudio({ url: "https://example.com/audio.mp3" });
+
+// Mention a status
+await wa.status.mention({ jid: "559999999999@s.whatsapp.net", statusMsgId: "STATUS_MSG_ID" });
 ```
 
 ## Actions
