@@ -7,6 +7,9 @@ import {
   ContactInfo, GroupInfo, InviteCodeResponse, ChatInfo, LabelInfo,
   CommunityInfo, CatalogResponse, WebhookStatistics, ListMessagesResponse,
   DownloadMediaResponse, CallResponse, MessageData, GroupParticipant,
+  LiveLocationData, SendContactsData, ProductMessageData, GroupInviteMessageData,
+  StatusTextData, StatusMediaData, StatusMentionData, CommunityGroupCreate,
+  NewsletterInfo,
 } from './types';
 import { IHttpClient } from './client/IHttpClient';
 import { HttpClient } from './client/HttpClient';
@@ -20,6 +23,8 @@ import { ContactService } from './services/ContactService';
 import { GroupService } from './services/GroupService';
 import { CommunityService } from './services/CommunityService';
 import { BusinessService } from './services/BusinessService';
+import { NewsletterService } from './services/NewsletterService';
+import { StatusService } from './services/StatusService';
 
 export class WhatsApp {
   readonly instance: InstanceService;
@@ -32,6 +37,8 @@ export class WhatsApp {
   readonly group: GroupService;
   readonly community: CommunityService;
   readonly business: BusinessService;
+  readonly newsletter: NewsletterService;
+  readonly status: StatusService;
 
   constructor(data: Init, httpClient?: IHttpClient) {
     const client = httpClient ?? new HttpClient(`${data.server}/${data.key}`);
@@ -46,6 +53,8 @@ export class WhatsApp {
     this.group = new GroupService(client);
     this.community = new CommunityService(client);
     this.business = new BusinessService(client);
+    this.newsletter = new NewsletterService(client);
+    this.status = new StatusService(client);
   }
 
   // ==================== Backward Compatibility ====================
@@ -61,6 +70,7 @@ export class WhatsApp {
   pairingCode(phoneNumber: string): Promise<PairingCodeResponse> { return this.instance.pairingCode(phoneNumber); }
   addMongoDb(uri: string, dbName: string): Promise<ApiResponse> { return this.instance.addMongoDb(uri, dbName); }
   setProxy(proxy: string): Promise<ApiResponse> { return this.instance.setProxy(proxy); }
+  resync(): Promise<ApiResponse> { return this.instance.resync(); }
   restart(): Promise<ApiResponse> { return this.instance.restart(); }
   updateProfileStatus(text: string): Promise<ApiResponse> { return this.instance.updateProfileStatus(text); }
   updateProfilePicture(url: string): Promise<ApiResponse> { return this.instance.updateProfilePicture(url); }
@@ -95,26 +105,41 @@ export class WhatsApp {
   sendPoll(to: string, name: string, values: Array<string | number | boolean>, selectableCount?: number): Promise<SendMessageRoot> { return this.message.sendPoll(to, name, values, selectableCount); }
   sendEvent(data: EventData): Promise<SendMessageRoot> { return this.message.sendEvent(data); }
   pinMessage(id: string, duration?: number): Promise<ApiResponse> { return this.message.pin(id, duration); }
+  unpinMessage(id: string): Promise<ApiResponse> { return this.message.unpin(id); }
   sendCallLink(to: string, type: string, caption?: string): Promise<SendMessageRoot> { return this.message.sendCallLink(to, type, caption); }
   sendImageBase64(to: string, base64: string, caption?: string): Promise<SendMessageRoot> { return this.message.sendImageBase64(to, base64, caption); }
   sendAudioBase64(to: string, base64: string): Promise<SendMessageRoot> { return this.message.sendAudioBase64(to, base64); }
   sendDocumentBase64(to: string, base64: string, mimetype: string, fileName?: string, caption?: string): Promise<SendMessageRoot> { return this.message.sendDocumentBase64(to, base64, mimetype, fileName, caption); }
+  sendContacts(data: SendContactsData): Promise<SendMessageRoot> { return this.message.sendContacts(data); }
+  sendLiveLocation(data: LiveLocationData): Promise<SendMessageRoot> { return this.message.sendLiveLocation(data); }
+  getMessageDetails(messageId: string): Promise<ApiResponse> { return this.message.getDetails(messageId); }
+  getMessageMedia(messageId: string, format?: string): Promise<ApiResponse> { return this.message.getMedia(messageId, format); }
+  sendProduct(data: ProductMessageData): Promise<SendMessageRoot> { return this.message.sendProduct(data); }
+  sendGroupInvite(data: GroupInviteMessageData): Promise<SendMessageRoot> { return this.message.sendGroupInvite(data); }
+  requestPhone(to: string): Promise<ApiResponse> { return this.message.requestPhone(to); }
+  createCallLink(type: string): Promise<ApiResponse> { return this.message.createCallLink(type); }
 
   // Chat
   getChats(): Promise<{ status: number; data: ChatInfo[] }> { return this.chat.list(); }
   modifyChat(id: string, action: 'markRead' | 'pin', value: boolean): Promise<ApiResponse> { return this.chat.modify(id, action, value); }
   deleteChat(chatId: string): Promise<ApiResponse> { return this.chat.delete(chatId); }
-  getChatMessages(chatId: string): Promise<{ status: number; data: MessageData[] }> { return this.chat.messages(chatId); }
+  getChatMessages(chatId: string, page?: number, limit?: number): Promise<{ status: number; data: MessageData[] }> { return this.chat.messages(chatId, page, limit); }
+  presenceSubscribe(jid: string): Promise<ApiResponse> { return this.chat.presenceSubscribe(jid); }
+  setDisappearing(jid: string, expiration: number): Promise<ApiResponse> { return this.chat.disappearing(jid, expiration); }
+  getPrivacy(): Promise<ApiResponse> { return this.chat.privacy(); }
 
   // Call
   makeCall(to: string, isVideo?: boolean): Promise<CallResponse> { return this.call.call(to, isVideo); }
   rejectCall(id: string, from: string): Promise<ApiResponse> { return this.call.reject(id, from); }
+  acceptCall(callId: string, callFrom: string): Promise<ApiResponse> { return this.call.accept(callId, callFrom); }
+  endCall(callId: string, peerJid: string): Promise<ApiResponse> { return this.call.end(callId, peerJid); }
 
   // Labels
   getLabels(): Promise<{ status: number; data: LabelInfo[] }> { return this.label.list(); }
   createLabel(name: string, labelId?: string): Promise<ApiResponse> { return this.label.create(name, labelId); }
   getChatLabel(labelId: string): Promise<{ status: number; data: ChatInfo[] }> { return this.label.getChats(labelId); }
   addChatLabel(labelId: string, to: string): Promise<ApiResponse> { return this.label.addToChat(labelId, to); }
+  deleteLabel(labelId: string): Promise<ApiResponse> { return this.label.delete(labelId); }
   removeChatLabel(labelId: string, to: string): Promise<ApiResponse> { return this.label.removeFromChat(labelId, to); }
 
   // Actions
@@ -124,8 +149,14 @@ export class WhatsApp {
 
   // Contacts
   contacts(): Promise<{ status: number; data: ContactInfo[] }> { return this.contact.list(); }
+  addContact(number: string, name: string): Promise<ApiResponse> { return this.contact.add(number, name); }
   contactProfile(id: string): Promise<{ status: number; data: ContactInfo }> { return this.contact.profile(id); }
+  removeContact(number: string): Promise<ApiResponse> { return this.contact.remove(number); }
   blockContact(number: string, action: 'block' | 'unblock'): Promise<ApiResponse> { return this.contact.block(number, action); }
+  clearContactSession(number: string): Promise<ApiResponse> { return this.contact.clearSession(number); }
+  getContactStatus(number: string): Promise<ApiResponse> { return this.contact.getStatus(number); }
+  listBlockedContacts(): Promise<ApiResponse> { return this.contact.listBlocked(); }
+  resolveLids(lids: string[]): Promise<ApiResponse> { return this.contact.resolveLids(lids); }
 
   // Groups
   groups(): Promise<{ status: number; data: GroupInfo[] }> { return this.group.list(); }
@@ -134,6 +165,8 @@ export class WhatsApp {
   updateGroup(id: string, name: string, description: string): Promise<ApiResponse> { return this.group.update(id, name, description); }
   changeGroupSettings(id: string, setting: 'announcement' | 'not_announcement' | 'locked' | 'unlocked'): Promise<ApiResponse> { return this.group.changeSettings(id, setting); }
   leaveGroup(id: string): Promise<ApiResponse> { return this.group.leave(id); }
+  getGroupMembers(id: string): Promise<{ status: number; data: GroupParticipant[] }> { return this.group.getMembers(id); }
+  getGroupInviteInfo(code: string): Promise<ApiResponse> { return this.group.getInviteInfo(code); }
   getInviteGroup(id: string): Promise<InviteCodeResponse> { return this.group.getInviteCode(id); }
   updateGroupPicture(id: string, url: string): Promise<ApiResponse> { return this.group.updatePicture(id, url); }
   removeGroupPicture(id: string): Promise<ApiResponse> { return this.group.removePicture(id); }
@@ -154,6 +187,13 @@ export class WhatsApp {
   removeCommunityParticipants(id: string, participants: string[]): Promise<ApiResponse> { return this.community.removeParticipants(id, participants); }
   getCommunityRequestParticipants(id: string): Promise<{ status: number; data: GroupParticipant[] }> { return this.community.getRequestParticipants(id); }
   updateCommunityRequestParticipants(id: string, data: GroupParticipantsAction): Promise<ApiResponse> { return this.community.updateRequestParticipants(id, data); }
+  acceptCommunityInvite(code: string): Promise<ApiResponse> { return this.community.acceptInvite(code); }
+  getCommunityInviteInfo(code: string): Promise<ApiResponse> { return this.community.getInviteInfo(code); }
+  createCommunityGroup(id: string, data: CommunityGroupCreate): Promise<ApiResponse> { return this.community.createGroup(id, data); }
+  setCommunityEphemeral(id: string, expiration: number): Promise<ApiResponse> { return this.community.ephemeral(id, expiration); }
+  updateCommunitySettings(id: string, setting: string): Promise<ApiResponse> { return this.community.updateSettings(id, setting); }
+  setCommunityMemberAddMode(id: string, mode: string): Promise<ApiResponse> { return this.community.memberAddMode(id, mode); }
+  setCommunityJoinApproval(id: string, mode: string): Promise<ApiResponse> { return this.community.joinApproval(id, mode); }
 
   // Business
   getCatalog(limit?: number, cursor?: string): Promise<CatalogResponse> { return this.business.getCatalog(limit, cursor); }

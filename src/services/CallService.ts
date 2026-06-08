@@ -18,4 +18,20 @@ export class CallService {
       method: HttpMethod.DELETE,
     });
   }
+
+  async accept(callId: string, callFrom: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.CALL}/accept`,
+      method: HttpMethod.POST,
+      body: { callId, callFrom },
+    });
+  }
+
+  async end(callId: string, peerJid: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.CALL}/end`,
+      method: HttpMethod.POST,
+      body: { callId, peerJid },
+    });
+  }
 }

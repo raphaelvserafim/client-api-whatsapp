@@ -3,7 +3,8 @@ import { WhatsAppError } from '../errors';
 import {
   Routes, HttpMethod, TypeMessage, StatusPresence, Contact, Section,
   Location, Buttons, Items, HeaderMedia, SendMessageRoot, ApiResponse,
-  EventData, ListMessagesResponse,
+  EventData, ListMessagesResponse, LiveLocationData, SendContactsData,
+  ProductMessageData, GroupInviteMessageData,
 } from '../types';
 
 export class MessageService {
@@ -148,6 +149,79 @@ export class MessageService {
       route: `${Routes.MESSAGES}/base64/document`,
       method: HttpMethod.POST,
       body: { to, base64, mimetype, fileName, caption },
+    });
+  }
+
+  async sendContacts(data: SendContactsData): Promise<SendMessageRoot> {
+    return this.http.request<SendMessageRoot>({
+      route: `${Routes.MESSAGES}/contacts`,
+      method: HttpMethod.POST,
+      body: data,
+    });
+  }
+
+  async sendLiveLocation(data: LiveLocationData): Promise<SendMessageRoot> {
+    return this.http.request<SendMessageRoot>({
+      route: `${Routes.MESSAGES}/live-location`,
+      method: HttpMethod.POST,
+      body: data,
+    });
+  }
+
+  async unpin(id: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.MESSAGES}/unpin`,
+      method: HttpMethod.POST,
+      body: { id },
+    });
+  }
+
+  async getDetails(messageId: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.MESSAGES}/${messageId}`,
+      method: HttpMethod.GET,
+    });
+  }
+
+  async getMedia(messageId: string, format?: string): Promise<ApiResponse> {
+    const params: Record<string, string> = {};
+    if (format) params.format = format;
+    return this.http.request<ApiResponse>({
+      route: `${Routes.MESSAGES}/${messageId}/media`,
+      method: HttpMethod.GET,
+      params,
+    });
+  }
+
+  async sendProduct(data: ProductMessageData): Promise<SendMessageRoot> {
+    return this.http.request<SendMessageRoot>({
+      route: `${Routes.MESSAGES}/product`,
+      method: HttpMethod.POST,
+      body: data,
+    });
+  }
+
+  async sendGroupInvite(data: GroupInviteMessageData): Promise<SendMessageRoot> {
+    return this.http.request<SendMessageRoot>({
+      route: `${Routes.MESSAGES}/group-invite`,
+      method: HttpMethod.POST,
+      body: data,
+    });
+  }
+
+  async requestPhone(to: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.MESSAGES}/request-phone`,
+      method: HttpMethod.POST,
+      body: { to },
+    });
+  }
+
+  async createCallLink(type: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.MESSAGES}/create-call-link`,
+      method: HttpMethod.POST,
+      body: { type },
     });
   }
 }

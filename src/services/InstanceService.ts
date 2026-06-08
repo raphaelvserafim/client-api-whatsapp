@@ -68,6 +68,13 @@ export class InstanceService {
     });
   }
 
+  async resync(): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.INSTANCES}/resync`,
+      method: HttpMethod.POST,
+    });
+  }
+
   async restart(): Promise<ApiResponse> {
     return this.http.request<ApiResponse>({
       route: `${Routes.INSTANCES}/restart`,

@@ -34,9 +34,16 @@ export class LabelService {
     });
   }
 
+  async delete(labelId: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.LABELS}/${labelId}`,
+      method: HttpMethod.DELETE,
+    });
+  }
+
   async removeFromChat(labelId: string, to: string): Promise<ApiResponse> {
     return this.http.request<ApiResponse>({
-      route: `${Routes.LABELS}/${labelId}/${to}`,
+      route: `${Routes.LABELS}/${labelId}/chat/${to}`,
       method: HttpMethod.DELETE,
     });
   }

@@ -23,6 +23,8 @@ export enum Routes {
   LABELS = 'labels',
   COMMUNITY = 'community',
   BUSINESS = 'business',
+  NEWSLETTER = 'newsletter',
+  STATUS = 'status',
 }
 
 
@@ -257,7 +259,6 @@ export interface GroupParticipantsAction {
 export interface MobileRegisterData {
   phoneNumberCountryCode: string;
   phoneNumberNationalNumber: string;
-  phoneNumberMobileCountryCode: string;
   phoneNumberMobileNetworkCode: string;
 }
 
@@ -362,4 +363,72 @@ export interface DownloadMediaResponse {
 export interface CallResponse {
   status: number;
   data: Record<string, unknown>;
+}
+
+
+export interface LiveLocationData {
+  to: string;
+  latitude: number;
+  longitude: number;
+  caption?: string;
+}
+
+
+export interface SendContactsData {
+  to: string;
+  displayName: string;
+  contacts: Contact[];
+}
+
+
+export interface ProductMessageData {
+  to: string;
+  businessOwnerJid: string;
+  productId: string;
+  catalogId: string;
+  body?: string;
+  footer?: string;
+}
+
+
+export interface GroupInviteMessageData {
+  to: string;
+  groupJid: string;
+  groupName: string;
+  inviteCode: string;
+  inviteExpiration?: number;
+  caption?: string;
+}
+
+
+export interface StatusTextData {
+  text: string;
+  statusJidList?: string[];
+}
+
+
+export interface StatusMediaData {
+  url: string;
+  caption?: string;
+  statusJidList?: string[];
+}
+
+
+export interface StatusMentionData {
+  jid: string;
+  statusMsgId: string;
+}
+
+
+export interface NewsletterInfo {
+  id: string;
+  name?: string;
+  description?: string;
+  subscribers?: number;
+}
+
+
+export interface CommunityGroupCreate {
+  subject: string;
+  participants?: string[];
 }

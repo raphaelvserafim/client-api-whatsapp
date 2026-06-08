@@ -19,6 +19,8 @@ export { ContactService } from './services/ContactService';
 export { GroupService } from './services/GroupService';
 export { CommunityService } from './services/CommunityService';
 export { BusinessService } from './services/BusinessService';
+export { NewsletterService } from './services/NewsletterService';
+export { StatusService } from './services/StatusService';
 
 // Types
 export {
@@ -33,4 +35,7 @@ export {
   InviteCodeResponse, ChatInfo, LabelInfo, CommunityInfo,
   CatalogResponse, WebhookStatistics, ListMessagesResponse,
   DownloadMediaResponse, CallResponse,
+  LiveLocationData, SendContactsData, ProductMessageData,
+  GroupInviteMessageData, StatusTextData, StatusMediaData,
+  StatusMentionData, NewsletterInfo, CommunityGroupCreate,
 } from './types';

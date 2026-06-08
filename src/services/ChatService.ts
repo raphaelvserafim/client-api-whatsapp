@@ -27,11 +27,37 @@ export class ChatService {
     });
   }
 
-  async messages(chatId: string): Promise<{ status: number; data: MessageData[] }> {
+  async messages(chatId: string, page?: number, limit?: number): Promise<{ status: number; data: MessageData[] }> {
+    const params: Record<string, string | number> = { chatId };
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
     return this.http.request<{ status: number; data: MessageData[] }>({
       route: `${Routes.CHAT}/messages`,
       method: HttpMethod.GET,
-      params: { chatId },
+      params,
+    });
+  }
+
+  async presenceSubscribe(jid: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.CHAT}/presence/subscribe`,
+      method: HttpMethod.POST,
+      body: { jid },
+    });
+  }
+
+  async disappearing(jid: string, expiration: number): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.CHAT}/disappearing`,
+      method: HttpMethod.POST,
+      body: { jid, expiration },
+    });
+  }
+
+  async privacy(): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.CHAT}/privacy`,
+      method: HttpMethod.GET,
     });
   }
 }

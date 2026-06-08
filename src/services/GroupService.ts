@@ -52,6 +52,21 @@ export class GroupService {
     });
   }
 
+  async getMembers(id: string): Promise<{ status: number; data: GroupParticipant[] }> {
+    return this.http.request<{ status: number; data: GroupParticipant[] }>({
+      route: `${Routes.GROUPS}/${id}/members`,
+      method: HttpMethod.GET,
+    });
+  }
+
+  async getInviteInfo(code: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.GROUPS}/invite/info`,
+      method: HttpMethod.GET,
+      params: { code },
+    });
+  }
+
   async getInviteCode(id: string): Promise<InviteCodeResponse> {
     return this.http.request<InviteCodeResponse>({
       route: `${Routes.GROUPS}/${id}/invite`,
