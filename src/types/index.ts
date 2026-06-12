@@ -104,45 +104,52 @@ export interface Section {
   rows: Row[];
 }
 
-
-
 export interface InfoInstance {
   status: number;
   instance: Instance;
 }
 
+export interface IInstanceConfig {
+  markMessages: boolean
+  receiveStatusMessage: boolean
+  receivePresence: boolean
+  saveMedia: boolean
+  permission: number
+  proxy: string | null
+  mongoDB: {
+    uri: string | null
+    dbName: string | null
+  }
+}
+
 export interface Instance {
-  receive_status_message: boolean;
-  save_media: boolean;
-  receive_presence: boolean;
-  permission: number;
-  mark_messages: boolean;
-  blocked: boolean;
-  user?: User;
-  phoneConnected: boolean;
-  webhook: Webhook;
-  businessProfile?: BusinessProfile;
+  mobile: boolean
+  socketConnection: number
+  user: User
+  phoneConnected: boolean
+  status: string
+  webhook: Webhook
+  config: IInstanceConfig
+  businessProfile: BusinessProfile
 }
 
 export interface User {
-  id?: string;
-  lid?: string;
-  name?: string;
-  imageProfile?: string;
+  id: string
+  name: string
+  lid: string
+  imageProfile: string
 }
 
 export interface Webhook {
-  allowWebhook: boolean;
-  allowNumber?: string;
-  webhookMessage: string;
-  webhookGroup: string;
-  webhookConnection: string;
-  webhookQrCode: string;
-  webhookMessageFromMe: string;
-  webhookHistory: string;
+  allowWebhook: boolean
+  allowNumber: string
+  webhookMessage: string
+  webhookConnection: string
+  webhookGroup: string
+  webhookHistory: string
+  webhookMessageFromMe: string
+  webhookQrCode: string
 }
-
-
 
 export interface SendMessageRoot {
   status: number;
@@ -186,12 +193,14 @@ export interface PairingCodeResponse {
 
 
 export interface BusinessProfile {
-  wid: string;
-  description: string;
-  website: string[];
-  category: string;
-  business_hours: Record<string, unknown>;
+  wid: string
+  description: string
+  address: string
+  email: string
+  website: any[]
+  category: string
 }
+
 
 
 
