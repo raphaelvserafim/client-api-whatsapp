@@ -4,6 +4,25 @@ export { WhatsApp } from './WhatsApp';
 // Error
 export { WhatsAppError } from './errors';
 
+// Webhook
+export { parseWebhook } from './webhook';
+export type {
+  WhatsAppWebhookEvent, WebhookEventType, WebhookEventMap,
+  WameWebhookEnvelope, WameWebhookEntry, WameWebhookChange, WameWebhookValue,
+  WebhookMetadata, WebhookError, WebhookEventBase,
+  WebhookMedia, WebhookAudio, WebhookDocument, WebhookSticker,
+  WebhookLocation, WebhookContactCard, WebhookMessageContext, WebhookReferral,
+  WebhookMessageEvent, MessageEventBase,
+  TextMessageEvent, ImageMessageEvent, AudioMessageEvent, VideoMessageEvent,
+  DocumentMessageEvent, StickerMessageEvent, LocationMessageEvent, ContactsMessageEvent,
+  ReactionMessageEvent, ReactionRemovedMessageEvent, ButtonMessageEvent,
+  ListReplyMessageEvent, ButtonReplyMessageEvent, ReferralMessageEvent,
+  EditMessageEvent, UnsupportedMessageEvent,
+  StatusEvent, WebhookStatusValue, PresenceEvent,
+  ConnectionOpenEvent, ConnectionCloseEvent, QrCodeEvent, CallEvent,
+  GroupParticipantsEvent, GroupUpdateEvent, HealthEvent, UnknownEvent,
+} from './webhook';
+
 // Client
 export { IHttpClient, RequestOptions } from './client/IHttpClient';
 export { HttpClient } from './client/HttpClient';

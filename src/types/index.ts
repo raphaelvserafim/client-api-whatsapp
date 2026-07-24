@@ -153,7 +153,12 @@ export interface Webhook {
 
 export interface SendMessageRoot {
   status: number;
-  data: MessageData;
+
+  message?: string;
+  
+
+  /** @deprecated use data instead */
+  data?: MessageData;
 }
 
 export interface MessageData {

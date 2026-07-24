@@ -112,6 +112,80 @@ await wa.instance.mobileRequestCode("sms");
 await wa.instance.mobileVerifyCode("123456");
 ```
 
+## Receiving Webhooks
+
+Configure your instance with `webhookFormat: "meta"` and use `parseWebhook` to
+turn the incoming POST body into an array of fully-typed, normalized events. A
+single request can batch several events, so `parseWebhook` always returns an
+array. It never throws: unrecognized events become `{ type: "unknown" }` and an
+invalid body returns `[]`, so your endpoint can always respond `200`.
+
+```typescript
+import express from "express";
+import { parseWebhook } from "@raphaelvserafim/client-api-whatsapp";
+
+const app = express();
+app.use(express.json());
+
+app.post("/webhook", (req, res) => {
+  for (const event of parseWebhook(req.body)) {
+    // event.instanceId / event.metadata.phoneNumberId are always available
+    switch (event.type) {
+      case "text":
+        console.log(`${event.from}: ${event.text.body}`);
+        if (event.context) console.log(`↪ reply to ${event.context.id}`);
+        break;
+      case "image":
+        console.log("image url:", event.image.url);
+        break;
+      case "button-reply":
+        console.log("button:", event.buttonReply.id, event.buttonReply.title);
+        break;
+      case "list-reply":
+        console.log("list:", event.listReply.id);
+        break;
+      case "reaction":
+        console.log("reaction:", event.reaction.emoji);
+        break;
+      case "status":
+        console.log("message", event.messageId, "is", event.status);
+        break;
+      case "connection.open":
+        console.log("connected");
+        break;
+      case "connection.close":
+        console.log("disconnected:", event.code, event.reason);
+        break;
+      case "qrcode":
+        console.log("scan qr (base64 png):", event.code);
+        break;
+      case "call":
+        console.log("incoming call from", event.from, "video:", event.isVideo);
+        break;
+      case "group.participants":
+        console.log("group", event.groupId, event.action, event.participants);
+        break;
+      case "health":
+        console.log("health:", event.status);
+        break;
+      default:
+        // event.raw holds the untouched envelope for anything else
+        break;
+    }
+  }
+
+  res.sendStatus(200);
+});
+```
+
+Event `type` values: `text`, `image`, `audio`, `video`, `document`, `sticker`,
+`location`, `contacts`, `reaction`, `reaction-removed`, `button`, `list-reply`,
+`button-reply`, `referral`, `edit`, `unsupported`, `status`, `presence`,
+`connection.open`, `connection.close`, `qrcode`, `call`, `group.participants`,
+`group.update`, `health`, `unknown`. Every event also carries `instanceId`,
+`metadata`, `field` and `raw` (the original envelope) — see the exported
+`WhatsAppWebhookEvent` union for full typings.
+
 ## Messages
 
 ### Send Messages
