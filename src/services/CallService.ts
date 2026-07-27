@@ -1,5 +1,5 @@
 import { IHttpClient } from '../client/IHttpClient';
-import { Routes, HttpMethod, ApiResponse, CallResponse } from '../types';
+import { Routes, HttpMethod, ApiResponse, CallResponse, CallAudioData } from '../types';
 
 export class CallService {
   constructor(private readonly http: IHttpClient) {}
@@ -32,6 +32,15 @@ export class CallService {
       route: `${Routes.CALL}/end`,
       method: HttpMethod.POST,
       body: { callId, peerJid },
+    });
+  }
+
+  /** Send audio into an active call. */
+  async sendAudio(callId: string, data: CallAudioData): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.CALL}/${callId}/audio`,
+      method: HttpMethod.POST,
+      body: data,
     });
   }
 }

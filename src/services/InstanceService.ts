@@ -143,4 +143,39 @@ export class InstanceService {
       method: HttpMethod.GET,
     });
   }
+
+  /** Import a WhatsApp Web session (WAME Passkey app). */
+  async importWebSession(session: object): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.INSTANCES}/web-session`,
+      method: HttpMethod.POST,
+      body: { session },
+    });
+  }
+
+  /** Register the official number (Cloud API). */
+  async officialRegister(pin: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.INSTANCES}/official/register`,
+      method: HttpMethod.POST,
+      body: { pin },
+    });
+  }
+
+  /** Deregister the official number (Cloud API). */
+  async officialDeregister(): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.INSTANCES}/official/deregister`,
+      method: HttpMethod.POST,
+    });
+  }
+
+  /** Set the two-step verification PIN (Cloud API). */
+  async officialTwoStepPin(pin: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.INSTANCES}/official/two-step-pin`,
+      method: HttpMethod.POST,
+      body: { pin },
+    });
+  }
 }

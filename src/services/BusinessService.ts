@@ -1,5 +1,5 @@
 import { IHttpClient } from '../client/IHttpClient';
-import { Routes, HttpMethod, ApiResponse, Product, CatalogResponse } from '../types';
+import { Routes, HttpMethod, ApiResponse, Product, CatalogResponse, CommerceSettings } from '../types';
 
 export class BusinessService {
   constructor(private readonly http: IHttpClient) {}
@@ -35,6 +35,45 @@ export class BusinessService {
     return this.http.request<ApiResponse>({
       route: `${Routes.BUSINESS}/catalog/product/${productId}`,
       method: HttpMethod.DELETE,
+    });
+  }
+
+  /** List product collections. */
+  async getCollections(limit?: number): Promise<ApiResponse> {
+    const params: Record<string, number> = {};
+    if (limit !== undefined) params.limit = limit;
+    return this.http.request<ApiResponse>({
+      route: `${Routes.BUSINESS}/collections`,
+      method: HttpMethod.GET,
+      params,
+    });
+  }
+
+  /** Get order details. */
+  async getOrder(orderId: string, token?: string): Promise<ApiResponse> {
+    const params: Record<string, string> = {};
+    if (token !== undefined) params.token = token;
+    return this.http.request<ApiResponse>({
+      route: `${Routes.BUSINESS}/order/${orderId}`,
+      method: HttpMethod.GET,
+      params,
+    });
+  }
+
+  /** Get commerce settings (official only). */
+  async getCommerceSettings(): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.BUSINESS}/commerce-settings`,
+      method: HttpMethod.GET,
+    });
+  }
+
+  /** Update commerce settings (official only). */
+  async updateCommerceSettings(settings: CommerceSettings): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.BUSINESS}/commerce-settings`,
+      method: HttpMethod.POST,
+      body: settings,
     });
   }
 }

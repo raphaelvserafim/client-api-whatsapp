@@ -4,7 +4,8 @@ import {
   Routes, HttpMethod, TypeMessage, StatusPresence, Contact, Section,
   Location, Buttons, Items, HeaderMedia, SendMessageRoot, ApiResponse,
   EventData, ListMessagesResponse, LiveLocationData, SendContactsData,
-  ProductMessageData, GroupInviteMessageData,
+  ProductMessageData, GroupInviteMessageData, SendTemplateData,
+  OrderDetailsData, OrderStatusData, AdMessageData, ProductListData,
 } from '../types';
 
 export class MessageService {
@@ -222,6 +223,69 @@ export class MessageService {
       route: `${Routes.MESSAGES}/create-call-link`,
       method: HttpMethod.POST,
       body: { type },
+    });
+  }
+
+  /** Mark a message as read (and optionally show typing). */
+  async markRead(messageId: string, typing?: boolean): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.MESSAGES}/read`,
+      method: HttpMethod.POST,
+      body: { messageId, typing },
+    });
+  }
+
+  /** Send an approved template message (official only). */
+  async sendTemplate(data: SendTemplateData): Promise<SendMessageRoot> {
+    return this.http.request<SendMessageRoot>({
+      route: `${Routes.MESSAGES}/template`,
+      method: HttpMethod.POST,
+      body: data,
+    });
+  }
+
+  /** Send an order with a payment link (Payments BR). */
+  async sendOrderDetails(data: OrderDetailsData): Promise<SendMessageRoot> {
+    return this.http.request<SendMessageRoot>({
+      route: `${Routes.MESSAGES}/order-details`,
+      method: HttpMethod.POST,
+      body: data,
+    });
+  }
+
+  /** Update an order status (official only — Payments BR). */
+  async sendOrderStatus(data: OrderStatusData): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.MESSAGES}/order-status`,
+      method: HttpMethod.POST,
+      body: data,
+    });
+  }
+
+  /** Request the recipient to share their location. */
+  async sendLocationRequest(to: string, text: string): Promise<SendMessageRoot> {
+    return this.http.request<SendMessageRoot>({
+      route: `${Routes.MESSAGES}/location-request`,
+      method: HttpMethod.POST,
+      body: { to, text },
+    });
+  }
+
+  /** Send a message with ad context. */
+  async sendAd(data: AdMessageData): Promise<SendMessageRoot> {
+    return this.http.request<SendMessageRoot>({
+      route: `${Routes.MESSAGES}/ad`,
+      method: HttpMethod.POST,
+      body: data,
+    });
+  }
+
+  /** Send a product list (official only). */
+  async sendProductList(data: ProductListData): Promise<SendMessageRoot> {
+    return this.http.request<SendMessageRoot>({
+      route: `${Routes.MESSAGES}/product-list`,
+      method: HttpMethod.POST,
+      body: data,
     });
   }
 }

@@ -1,6 +1,6 @@
 # @raphaelvserafim/client-api-whatsapp
 > With our API, you can send text, audio, video, and image messages quickly and easily. Adapt to your business communication needs comprehensively.
-Version: 1.5.0
+Version: 1.7.0
 
 ## Installation
 npm i @raphaelvserafim/client-api-whatsapp
@@ -22,6 +22,10 @@ const wa = new WhatsApp({ server: "https://us.api-wa.me", key: "YOUR_KEY" });
 - wa.business → BusinessService
 - wa.newsletter → NewsletterService
 - wa.status → StatusService
+- wa.templates → TemplatesService
+- wa.analytics → AnalyticsService
+- wa.calling → CallingService
+- wa.conversation → ConversationService
 
 ## wa.instance
 // connect(): Promise<Connect>
@@ -77,6 +81,18 @@ await wa.instance.mobileVerifyCode("code");
 
 // webhookStatistics(): Promise<WebhookStatistics>
 await wa.instance.webhookStatistics();
+
+// importWebSession(session: object): Promise<ApiResponse>
+await wa.instance.importWebSession({ /* object */ });
+
+// officialRegister(pin: string): Promise<ApiResponse>
+await wa.instance.officialRegister("pin");
+
+// officialDeregister(): Promise<ApiResponse>
+await wa.instance.officialDeregister();
+
+// officialTwoStepPin(pin: string): Promise<ApiResponse>
+await wa.instance.officialTwoStepPin("pin");
 
 ## wa.message
 // list(phoneNumber: string, page?: number, limit?: number): Promise<ListMessagesResponse>
@@ -175,6 +191,27 @@ await wa.message.requestPhone("to");
 // createCallLink(type: string): Promise<ApiResponse>
 await wa.message.createCallLink("type");
 
+// markRead(messageId: string, typing?: boolean): Promise<ApiResponse>
+await wa.message.markRead("messageId", false);
+
+// sendTemplate(data: SendTemplateData): Promise<SendMessageRoot>
+await wa.message.sendTemplate({ /* SendTemplateData */ });
+
+// sendOrderDetails(data: OrderDetailsData): Promise<SendMessageRoot>
+await wa.message.sendOrderDetails({ /* OrderDetailsData */ });
+
+// sendOrderStatus(data: OrderStatusData): Promise<ApiResponse>
+await wa.message.sendOrderStatus({ /* OrderStatusData */ });
+
+// sendLocationRequest(to: string, text: string): Promise<SendMessageRoot>
+await wa.message.sendLocationRequest("to", "text");
+
+// sendAd(data: AdMessageData): Promise<SendMessageRoot>
+await wa.message.sendAd({ /* AdMessageData */ });
+
+// sendProductList(data: ProductListData): Promise<SendMessageRoot>
+await wa.message.sendProductList({ /* ProductListData */ });
+
 ## wa.chat
 // list(): Promise<{ status: number; data: ChatInfo[] }>
 await wa.chat.list();
@@ -209,6 +246,9 @@ await wa.call.accept("callId", "callFrom");
 
 // end(callId: string, peerJid: string): Promise<ApiResponse>
 await wa.call.end("callId", "peerJid");
+
+// sendAudio(callId: string, data: CallAudioData): Promise<ApiResponse>
+await wa.call.sendAudio("callId", { /* CallAudioData */ });
 
 ## wa.label
 // list(): Promise<{ status: number; data: LabelInfo[] }>
@@ -316,6 +356,9 @@ await wa.group.getRequestParticipants("id");
 // updateRequestParticipants(id: string, data: GroupParticipantsAction): Promise<ApiResponse>
 await wa.group.updateRequestParticipants("id", { /* GroupParticipantsAction */ });
 
+// readiness(): Promise<ApiResponse>
+await wa.group.readiness();
+
 ## wa.community
 // list(): Promise<{ status: number; data: CommunityInfo[] }>
 await wa.community.list();
@@ -380,6 +423,18 @@ await wa.business.updateProduct("productId", { /* Product */ });
 
 // deleteProduct(productId: string): Promise<ApiResponse>
 await wa.business.deleteProduct("productId");
+
+// getCollections(limit?: number): Promise<ApiResponse>
+await wa.business.getCollections(0);
+
+// getOrder(orderId: string, token?: string): Promise<ApiResponse>
+await wa.business.getOrder("orderId", "token");
+
+// getCommerceSettings(): Promise<ApiResponse>
+await wa.business.getCommerceSettings();
+
+// updateCommerceSettings(settings: CommerceSettings): Promise<ApiResponse>
+await wa.business.updateCommerceSettings({ /* CommerceSettings */ });
 
 ## wa.newsletter
 // create(name: string, description?: string): Promise<ApiResponse>
@@ -449,6 +504,58 @@ await wa.status.sendAudio({ /* data */ });
 // mention(data: StatusMentionData): Promise<ApiResponse>
 await wa.status.mention({ /* StatusMentionData */ });
 
+## wa.templates
+// list(): Promise<ApiResponse>
+await wa.templates.list();
+
+// create(data: CreateTemplateData): Promise<ApiResponse>
+await wa.templates.create({ /* CreateTemplateData */ });
+
+// delete(name: string): Promise<ApiResponse>
+await wa.templates.delete("name");
+
+// uploadHeaderMedia(url: string): Promise<ApiResponse>
+await wa.templates.uploadHeaderMedia("url");
+
+// get(id: string): Promise<ApiResponse>
+await wa.templates.get("id");
+
+// update(id: string, data: UpdateTemplateData): Promise<ApiResponse>
+await wa.templates.update("id", { /* UpdateTemplateData */ });
+
+## wa.analytics
+// usage(): Promise<ApiResponse>
+await wa.analytics.usage();
+
+// conversations(query?: AnalyticsQuery): Promise<ApiResponse>
+await wa.analytics.conversations({ /* AnalyticsQuery */ });
+
+// messages(query?: AnalyticsQuery): Promise<ApiResponse>
+await wa.analytics.messages({ /* AnalyticsQuery */ });
+
+// templates(query?: AnalyticsQuery): Promise<ApiResponse>
+await wa.analytics.templates({ /* AnalyticsQuery */ });
+
+// pricing(query?: AnalyticsQuery): Promise<ApiResponse>
+await wa.analytics.pricing({ /* AnalyticsQuery */ });
+
+## wa.calling
+// getSettings(): Promise<ApiResponse>
+await wa.calling.getSettings();
+
+// updateSettings(calling: object): Promise<ApiResponse>
+await wa.calling.updateSettings({ /* object */ });
+
+// controlCall(data: CallControlData): Promise<ApiResponse>
+await wa.calling.controlCall({ /* CallControlData */ });
+
+## wa.conversation
+// getComponents(): Promise<ApiResponse>
+await wa.conversation.getComponents();
+
+// updateComponents(data: ConversationComponentsData): Promise<ApiResponse>
+await wa.conversation.updateComponents({ /* ConversationComponentsData */ });
+
 ## Type Definitions
 ```typescript
 export interface Init {
@@ -477,6 +584,10 @@ export enum Routes {
   BUSINESS = 'business',
   NEWSLETTER = 'newsletter',
   STATUS = 'status',
+  TEMPLATES = 'templates',
+  ANALYTICS = 'analytics',
+  CALLING = 'calling',
+  CONVERSATION = 'conversation',
 }
 
 export enum TypeMessage {
@@ -858,6 +969,123 @@ export interface NewsletterInfo {
 export interface CommunityGroupCreate {
   subject: string;
   participants?: string[];
+}
+
+export interface MarkReadData {
+  messageId: string;
+  typing?: boolean;
+}
+
+export interface SendTemplateData {
+  to: string;
+  name: string;
+  language?: string;
+  components?: TemplateComponent[];
+}
+
+export interface TemplateComponent {
+  type: string;
+  [key: string]: unknown;
+}
+
+export interface OrderTax {
+  value?: number;
+  description?: string;
+}
+
+export interface OrderItem {
+  name: string;
+  amount: number;
+  quantity: number;
+  saleAmount?: number;
+}
+
+export interface OrderDetailsData {
+  to: string;
+  text: string;
+  title: string;
+  referenceId: string;
+  paymentLinkUri: string;
+  totalAmount: number;
+  subtotal: number;
+  tax?: OrderTax;
+  items: OrderItem[];
+}
+
+export interface OrderStatusData {
+  to: string;
+  referenceId: string;
+  status: string;
+  description?: string;
+}
+
+export interface LocationRequestData {
+  to: string;
+  text: string;
+}
+
+export interface AdMessageData {
+  to: string;
+  text: string;
+  url?: string;
+  sourceId?: string;
+  sourceUrl?: string;
+  title?: string;
+  body?: string;
+  mentions?: string[];
+}
+
+export interface ProductListData {
+  to: string;
+  header: string;
+  body: string;
+  sections: Section[];
+  footer?: string;
+  catalogId: string;
+}
+
+export interface CallAudioData {
+  file?: string;
+  url?: string;
+  base64?: string;
+}
+
+export interface CommerceSettings {
+  isCartEnabled?: boolean;
+  isCatalogVisible?: boolean;
+}
+
+export interface CreateTemplateData {
+  name: string;
+  language: string;
+  category: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION';
+  components: TemplateComponent[];
+  allow_category_change?: boolean;
+}
+
+export interface UpdateTemplateData {
+  category?: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION';
+  components?: TemplateComponent[];
+}
+
+export interface AnalyticsQuery {
+  start?: string;
+  end?: string;
+  granularity?: string;
+}
+
+export interface CallControlData {
+  action: string;
+  to?: string;
+  callId?: string;
+  sdp?: string;
+  sdpType?: string;
+}
+
+export interface ConversationComponentsData {
+  enableWelcomeMessage?: boolean;
+  prompts?: unknown[];
+  commands?: unknown[];
 }
 ```
 

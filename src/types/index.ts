@@ -25,6 +25,10 @@ export enum Routes {
   BUSINESS = 'business',
   NEWSLETTER = 'newsletter',
   STATUS = 'status',
+  TEMPLATES = 'templates',
+  ANALYTICS = 'analytics',
+  CALLING = 'calling',
+  CONVERSATION = 'conversation',
 }
 
 
@@ -445,4 +449,141 @@ export interface NewsletterInfo {
 export interface CommunityGroupCreate {
   subject: string;
   participants?: string[];
+}
+
+
+// ==================== Official (Cloud API) ====================
+
+/** Mark a message as read (POST /message/read). */
+export interface MarkReadData {
+  messageId: string;
+  typing?: boolean;
+}
+
+/** Send an approved template message (POST /message/template — official only). */
+export interface SendTemplateData {
+  to: string;
+  name: string;
+  language?: string;
+  components?: TemplateComponent[];
+}
+
+/** A component of a WhatsApp message template (header/body/footer/buttons). */
+export interface TemplateComponent {
+  type: string;
+  [key: string]: unknown;
+}
+
+/** Tax details for an order (Payments BR). */
+export interface OrderTax {
+  value?: number;
+  description?: string;
+}
+
+/** A single line item of an order (Payments BR). */
+export interface OrderItem {
+  name: string;
+  amount: number;
+  quantity: number;
+  saleAmount?: number;
+}
+
+/** Send an order with a payment link (POST /message/order-details — Payments BR). */
+export interface OrderDetailsData {
+  to: string;
+  text: string;
+  title: string;
+  referenceId: string;
+  paymentLinkUri: string;
+  totalAmount: number;
+  subtotal: number;
+  tax?: OrderTax;
+  items: OrderItem[];
+}
+
+/** Update an order status (POST /message/order-status — official only, Payments BR). */
+export interface OrderStatusData {
+  to: string;
+  referenceId: string;
+  status: string;
+  description?: string;
+}
+
+/** Request the recipient to share their location (POST /message/location-request). */
+export interface LocationRequestData {
+  to: string;
+  text: string;
+}
+
+/** Send a message with ad context (POST /message/ad). */
+export interface AdMessageData {
+  to: string;
+  text: string;
+  url?: string;
+  sourceId?: string;
+  sourceUrl?: string;
+  title?: string;
+  body?: string;
+  mentions?: string[];
+}
+
+/** Send a product list (POST /message/product-list — official only). */
+export interface ProductListData {
+  to: string;
+  header: string;
+  body: string;
+  sections: Section[];
+  footer?: string;
+  catalogId: string;
+}
+
+/** Inject audio into an active call (POST /call/{callId}/audio). */
+export interface CallAudioData {
+  file?: string;
+  url?: string;
+  base64?: string;
+}
+
+/** Commerce settings (GET/POST /business/commerce-settings — official only). */
+export interface CommerceSettings {
+  isCartEnabled?: boolean;
+  isCatalogVisible?: boolean;
+}
+
+/** Create a message template (POST /templates — official only). */
+export interface CreateTemplateData {
+  name: string;
+  language: string;
+  category: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION';
+  components: TemplateComponent[];
+  allow_category_change?: boolean;
+}
+
+/** Edit a message template (PUT /templates/{id} — official only). */
+export interface UpdateTemplateData {
+  category?: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION';
+  components?: TemplateComponent[];
+}
+
+/** Query range for analytics endpoints (official only). */
+export interface AnalyticsQuery {
+  start?: string;
+  end?: string;
+  granularity?: string;
+}
+
+/** Control a call (POST /calling/call — official only). */
+export interface CallControlData {
+  action: string;
+  to?: string;
+  callId?: string;
+  sdp?: string;
+  sdpType?: string;
+}
+
+/** Conversational components (POST /conversation — official only). */
+export interface ConversationComponentsData {
+  enableWelcomeMessage?: boolean;
+  prompts?: unknown[];
+  commands?: unknown[];
 }

@@ -110,6 +110,14 @@ await wa.instance.mobileRegisterPrepare({
 });
 await wa.instance.mobileRequestCode("sms");
 await wa.instance.mobileVerifyCode("123456");
+
+// Import a WhatsApp Web session (WAME Passkey app)
+await wa.instance.importWebSession({ /* session object */ });
+
+// Official number (Cloud API)
+await wa.instance.officialRegister("123456");      // register with 2FA PIN
+await wa.instance.officialTwoStepPin("123456");    // set two-step verification PIN
+await wa.instance.officialDeregister();            // deregister
 ```
 
 ## Receiving Webhooks
@@ -476,6 +484,31 @@ await wa.message.requestPhone(to);
 
 // Create call link (without sending)
 await wa.message.createCallLink("video");
+
+// Mark a message as read (and optionally show typing)
+await wa.message.markRead("MESSAGE_ID", true);
+
+// Send an approved template message (official only)
+await wa.message.sendTemplate({ to, name: "order_confirmation", language: "pt_BR", components: [] });
+
+// Request the recipient to share their location
+await wa.message.sendLocationRequest(to, "Please share your location");
+
+// Send a message with ad context
+await wa.message.sendAd({ to, text: "Check this out", sourceUrl: "https://example.com" });
+
+// Send a product list (official only)
+await wa.message.sendProductList({ to, header: "Our products", body: "Pick one", sections: [], catalogId: "catalog_id" });
+
+// Order with payment link (Payments BR)
+await wa.message.sendOrderDetails({
+  to, text: "Your order", title: "Order #123", referenceId: "REF123",
+  paymentLinkUri: "https://pay.example.com/123", totalAmount: 10000, subtotal: 10000,
+  items: [{ name: "Item", amount: 10000, quantity: 1 }],
+});
+
+// Update an order status (official only — Payments BR)
+await wa.message.sendOrderStatus({ to, referenceId: "REF123", status: "shipped" });
 ```
 
 ## Chat
@@ -521,6 +554,9 @@ await wa.call.accept("CALL_ID", "559999999999@s.whatsapp.net");
 
 // End a call
 await wa.call.end("CALL_ID", "559999999999@s.whatsapp.net");
+
+// Send audio into an active call
+await wa.call.sendAudio("CALL_ID", { url: "https://example.com/audio.mp3" });
 ```
 
 ## Labels
@@ -629,6 +665,9 @@ const members = await wa.group.getMembers("123456789@g.us");
 
 // Get invite info from code
 const inviteInfo = await wa.group.getInviteInfo("INVITE_CODE");
+
+// Check groups readiness (diagnostic)
+await wa.group.readiness();
 ```
 
 ## Community
@@ -710,6 +749,16 @@ await wa.business.updateProduct("product_id", {
 
 // Delete product
 await wa.business.deleteProduct("product_id");
+
+// List collections
+await wa.business.getCollections(10);
+
+// Get order details
+await wa.business.getOrder("order_id", "token");
+
+// Commerce settings (official only)
+await wa.business.getCommerceSettings();
+await wa.business.updateCommerceSettings({ isCartEnabled: true, isCatalogVisible: true });
 ```
 
 ## Newsletter
@@ -787,6 +836,62 @@ const media = await wa.action.downloadMedia("image", {
 
 // Delete stored media
 await wa.action.deleteStorage();
+```
+
+## Templates (official only)
+
+```ts
+// List templates
+await wa.templates.list();
+
+// Create a template
+await wa.templates.create({
+  name: "order_confirmation",
+  language: "pt_BR",
+  category: "UTILITY",
+  components: [{ type: "BODY", text: "Your order {{1}} is confirmed." }],
+});
+
+// Upload a header media sample and get its handle
+await wa.templates.uploadHeaderMedia("https://example.com/header.jpg");
+
+// Get / edit / delete
+await wa.templates.get("template_id");
+await wa.templates.update("template_id", { category: "MARKETING" });
+await wa.templates.delete("order_confirmation");
+```
+
+## Analytics (official only)
+
+```ts
+await wa.analytics.usage();
+await wa.analytics.conversations({ start: "2026-01-01", end: "2026-01-31", granularity: "DAILY" });
+await wa.analytics.messages({ start: "2026-01-01", end: "2026-01-31" });
+await wa.analytics.templates({ start: "2026-01-01", end: "2026-01-31" });
+await wa.analytics.pricing({ start: "2026-01-01", end: "2026-01-31" });
+```
+
+## Calling (official only)
+
+```ts
+// Get / update calling settings
+await wa.calling.getSettings();
+await wa.calling.updateSettings({ status: "ENABLED" });
+
+// Control a call: connect / pre_accept / accept / reject / terminate
+await wa.calling.controlCall({ action: "accept", callId: "CALL_ID", to: "559999999999" });
+```
+
+## Conversation (official only)
+
+```ts
+// Get / update conversational components
+await wa.conversation.getComponents();
+await wa.conversation.updateComponents({
+  enableWelcomeMessage: true,
+  prompts: [],
+  commands: [],
+});
 ```
 
 ## Custom HTTP Client

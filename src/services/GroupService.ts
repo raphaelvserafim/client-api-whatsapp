@@ -128,4 +128,12 @@ export class GroupService {
       body: data,
     });
   }
+
+  /** Check groups readiness (diagnostic). */
+  async readiness(): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.GROUPS}/readiness`,
+      method: HttpMethod.GET,
+    });
+  }
 }

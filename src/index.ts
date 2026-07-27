@@ -40,6 +40,10 @@ export { CommunityService } from './services/CommunityService';
 export { BusinessService } from './services/BusinessService';
 export { NewsletterService } from './services/NewsletterService';
 export { StatusService } from './services/StatusService';
+export { TemplatesService } from './services/TemplatesService';
+export { AnalyticsService } from './services/AnalyticsService';
+export { CallingService } from './services/CallingService';
+export { ConversationService } from './services/ConversationService';
 
 // Types
 export {
@@ -57,4 +61,8 @@ export {
   LiveLocationData, SendContactsData, ProductMessageData,
   GroupInviteMessageData, StatusTextData, StatusMediaData,
   StatusMentionData, NewsletterInfo, CommunityGroupCreate,
+  MarkReadData, SendTemplateData, TemplateComponent, OrderTax, OrderItem,
+  OrderDetailsData, OrderStatusData, LocationRequestData, AdMessageData,
+  ProductListData, CallAudioData, CommerceSettings, CreateTemplateData,
+  UpdateTemplateData, AnalyticsQuery, CallControlData, ConversationComponentsData,
 } from './types';

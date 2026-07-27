@@ -25,6 +25,10 @@ import { CommunityService } from './services/CommunityService';
 import { BusinessService } from './services/BusinessService';
 import { NewsletterService } from './services/NewsletterService';
 import { StatusService } from './services/StatusService';
+import { TemplatesService } from './services/TemplatesService';
+import { AnalyticsService } from './services/AnalyticsService';
+import { CallingService } from './services/CallingService';
+import { ConversationService } from './services/ConversationService';
 
 export class WhatsApp {
   readonly instance: InstanceService;
@@ -39,6 +43,10 @@ export class WhatsApp {
   readonly business: BusinessService;
   readonly newsletter: NewsletterService;
   readonly status: StatusService;
+  readonly templates: TemplatesService;
+  readonly analytics: AnalyticsService;
+  readonly calling: CallingService;
+  readonly conversation: ConversationService;
 
   constructor(data: Init, httpClient?: IHttpClient) {
     const client = httpClient ?? new HttpClient(`${data.server}/${data.key}`);
@@ -55,6 +63,10 @@ export class WhatsApp {
     this.business = new BusinessService(client);
     this.newsletter = new NewsletterService(client);
     this.status = new StatusService(client);
+    this.templates = new TemplatesService(client);
+    this.analytics = new AnalyticsService(client);
+    this.calling = new CallingService(client);
+    this.conversation = new ConversationService(client);
   }
 
   // ==================== Backward Compatibility ====================
