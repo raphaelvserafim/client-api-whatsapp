@@ -212,6 +212,18 @@ await wa.message.sendAd({ /* AdMessageData */ });
 // sendProductList(data: ProductListData): Promise<SendMessageRoot>
 await wa.message.sendProductList({ /* ProductListData */ });
 
+// delete(id: string): Promise<ApiResponse>
+await wa.message.delete("id");
+
+// edit(id: string, text: string): Promise<ApiResponse>
+await wa.message.edit("id", "text");
+
+// update(id: string, text: string): Promise<ApiResponse>
+await wa.message.update("id", "text");
+
+// keep(id: string): Promise<ApiResponse>
+await wa.message.keep("id");
+
 ## wa.chat
 // list(): Promise<{ status: number; data: ChatInfo[] }>
 await wa.chat.list();

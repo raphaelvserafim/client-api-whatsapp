@@ -130,6 +130,10 @@ export class WhatsApp {
   sendGroupInvite(data: GroupInviteMessageData): Promise<SendMessageRoot> { return this.message.sendGroupInvite(data); }
   requestPhone(to: string): Promise<ApiResponse> { return this.message.requestPhone(to); }
   createCallLink(type: string): Promise<ApiResponse> { return this.message.createCallLink(type); }
+  deleteMessage(id: string): Promise<ApiResponse> { return this.message.delete(id); }
+  editMessage(id: string, text: string): Promise<ApiResponse> { return this.message.edit(id, text); }
+  updateMessage(id: string, text: string): Promise<ApiResponse> { return this.message.update(id, text); }
+  keepMessage(id: string): Promise<ApiResponse> { return this.message.keep(id); }
 
   // Chat
   getChats(): Promise<{ status: number; data: ChatInfo[] }> { return this.chat.list(); }

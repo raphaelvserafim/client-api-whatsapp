@@ -288,4 +288,38 @@ export class MessageService {
       body: data,
     });
   }
+
+  /** Delete a message by ID. */
+  async delete(id: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.MESSAGES}/${id}`,
+      method: HttpMethod.DELETE,
+    });
+  }
+
+  /** Edit a message by ID, replacing its text. */
+  async edit(id: string, text: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.MESSAGES}/${id}/edit`,
+      method: HttpMethod.PUT,
+      body: { text },
+    });
+  }
+
+  /** Update a message by ID, replacing its text (alias of {@link edit}). */
+  async update(id: string, text: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.MESSAGES}/${id}`,
+      method: HttpMethod.PUT,
+      body: { text },
+    });
+  }
+
+  /** Star/keep a message by ID. */
+  async keep(id: string): Promise<ApiResponse> {
+    return this.http.request<ApiResponse>({
+      route: `${Routes.MESSAGES}/${id}/keep`,
+      method: HttpMethod.POST,
+    });
+  }
 }

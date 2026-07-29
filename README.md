@@ -509,6 +509,15 @@ await wa.message.sendOrderDetails({
 
 // Update an order status (official only — Payments BR)
 await wa.message.sendOrderStatus({ to, referenceId: "REF123", status: "shipped" });
+
+// Edit a message (replace its text)
+await wa.message.edit("MESSAGE_ID", "Corrected text");
+
+// Delete a message
+await wa.message.delete("MESSAGE_ID");
+
+// Star/keep a message
+await wa.message.keep("MESSAGE_ID");
 ```
 
 ## Chat
