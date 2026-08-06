@@ -6,10 +6,26 @@ import {
   EventData, ListMessagesResponse, LiveLocationData, SendContactsData,
   ProductMessageData, GroupInviteMessageData, SendTemplateData,
   OrderDetailsData, OrderStatusData, AdMessageData, ProductListData,
+  Provider,
 } from '../types';
 
 export class MessageService {
-  constructor(private readonly http: IHttpClient) {}
+  constructor(
+    private readonly http: IHttpClient,
+    private readonly defaultProvider?: Provider,
+  ) {}
+
+  /**
+   * Fill in the client-level default provider when the body does not set one.
+   * A per-call `provider` always wins; when neither is present the field is
+   * omitted and the API falls back to `whatsapp`.
+   */
+  private withProvider<T extends { provider?: Provider }>(body: T): T {
+    if (this.defaultProvider && body.provider === undefined) {
+      return { ...body, provider: this.defaultProvider };
+    }
+    return body;
+  }
 
   async list(phoneNumber: string, page?: number, limit?: number): Promise<ListMessagesResponse> {
     const params: Record<string, string | number> = { phoneNumber };
@@ -55,6 +71,7 @@ export class MessageService {
         subtotal?: string;
         totalAmount?: string;
         items?: Items[];
+        provider?: Provider;
       };
     },
     reply: boolean = false,
@@ -70,7 +87,7 @@ export class MessageService {
       ? `${Routes.MESSAGES}/${data.body.msgId}/${data.type}`
       : `${Routes.MESSAGES}/${data.type}`;
 
-    return this.http.request<SendMessageRoot>({ route, method: HttpMethod.POST, body: data.body });
+    return this.http.request<SendMessageRoot>({ route, method: HttpMethod.POST, body: this.withProvider(data.body) });
   }
 
   async forward(to: string, msgId: string): Promise<SendMessageRoot> {
@@ -240,7 +257,7 @@ export class MessageService {
     return this.http.request<SendMessageRoot>({
       route: `${Routes.MESSAGES}/template`,
       method: HttpMethod.POST,
-      body: data,
+      body: this.withProvider(data),
     });
   }
 

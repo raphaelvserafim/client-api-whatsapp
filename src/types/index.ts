@@ -1,6 +1,11 @@
+/** Provider channel a message is sent through / received from. */
+export type Provider = 'whatsapp' | 'instagram' | 'messenger';
+
 export interface Init {
   server: string;
   key: string;
+  /** Default provider applied to every send unless overridden per-call. */
+  provider?: Provider;
 }
 
 export enum HttpMethod {
@@ -466,6 +471,7 @@ export interface SendTemplateData {
   name: string;
   language?: string;
   components?: TemplateComponent[];
+  provider?: Provider;
 }
 
 /** A component of a WhatsApp message template (header/body/footer/buttons). */

@@ -1,4 +1,6 @@
 // Main class
+export { Wame } from './Wame';
+/** @deprecated Use `Wame`. */
 export { WhatsApp } from './WhatsApp';
 
 // Error
@@ -9,7 +11,7 @@ export { parseWebhook } from './webhook';
 export type {
   WhatsAppWebhookEvent, WebhookEventType, WebhookEventMap,
   WameWebhookEnvelope, WameWebhookEntry, WameWebhookChange, WameWebhookValue,
-  WebhookMetadata, WebhookError, WebhookEventBase,
+  WebhookMetadata, WebhookError, WebhookEventBase, WebhookSenderProfile,
   WebhookMedia, WebhookAudio, WebhookDocument, WebhookSticker,
   WebhookLocation, WebhookContactCard, WebhookMessageContext, WebhookReferral,
   WebhookMessageEvent, MessageEventBase,
@@ -47,7 +49,7 @@ export { ConversationService } from './services/ConversationService';
 
 // Types
 export {
-  Init, HttpMethod, Routes, TypeMessage, StatusPresence,
+  Init, Provider, HttpMethod, Routes, TypeMessage, StatusPresence,
   ApiResponse, WebhookBody, Contact, Location, Row, Section,
   Buttons, Items, HeaderMedia, DownloadableMessage, Product,
   CommunityCreate, CommunityUpdate, GroupParticipantsAction,

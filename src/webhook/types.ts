@@ -1,3 +1,7 @@
+import { Provider } from '../types';
+
+export type { Provider };
+
 // ==================== Raw Meta ("wame") envelope ====================
 // Shape of the JSON delivered to the webhook URL when the instance is
 // configured with `webhookFormat: "meta"`. Fields are kept close to the
@@ -36,6 +40,10 @@ export interface WameWebhookEntry {
 
 export interface WameWebhookEnvelope {
   object: string;
+  /** Channel this event came from: "whatsapp" | "instagram" | "messenger". */
+  provider?: Provider;
+  /** True when delivered via the official Meta Cloud API (vs. unofficial/QR). */
+  official?: boolean;
   entry: WameWebhookEntry[];
 }
 
@@ -62,6 +70,10 @@ export interface WebhookEventBase {
   metadata: WebhookMetadata;
   /** Original event category ("messages", "connection", "groups", ...). */
   field: string;
+  /** Channel this event came from: "whatsapp" | "instagram" | "messenger". */
+  provider?: Provider;
+  /** True when delivered via the official Meta Cloud API (vs. unofficial/QR). */
+  official?: boolean;
   /** Escape hatch: the untouched incoming envelope. */
   raw: WameWebhookEnvelope;
 }
@@ -124,10 +136,21 @@ export interface WebhookReferral {
 
 // ==================== Message events (field: "messages") ====================
 
+/** Sender profile carried by the incoming payload (Instagram/Messenger enrich this). */
+export interface WebhookSenderProfile {
+  name?: string;
+  username?: string;
+  picture?: string;
+}
+
 export interface MessageEventBase extends WebhookEventBase {
   field: 'messages';
   /** Sender JID / wa_id. */
   from: string;
+  /** Provider-scoped sender id (from_user_id) — e.g. Instagram/Messenger user id. */
+  fromUserId?: string;
+  /** Sender profile (name/username/picture) when the payload includes contacts. */
+  profile?: WebhookSenderProfile;
   /** WhatsApp message id (wamid). */
   messageId: string;
   timestamp?: string;
