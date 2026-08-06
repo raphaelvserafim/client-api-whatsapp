@@ -19,9 +19,9 @@ const SRC = path.join(ROOT, 'src');
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
 
 // ---------------------------------------------------------------------------
-// 2. Read service map from WhatsApp.ts  (readonly <prop>: <ServiceClass>)
+// 2. Read service map from Wame.ts  (readonly <prop>: <ServiceClass>)
 // ---------------------------------------------------------------------------
-const whatsappSrc = fs.readFileSync(path.join(SRC, 'WhatsApp.ts'), 'utf-8');
+const whatsappSrc = fs.readFileSync(path.join(SRC, 'Wame.ts'), 'utf-8');
 
 // Match lines like:  readonly instance: InstanceService;
 const serviceMapRegex = /readonly\s+(\w+)\s*:\s*(\w+Service)\s*;/g;
@@ -248,8 +248,16 @@ Version: ${pkg.version}
 npm i ${pkg.name}
 
 ## Initialization
-import { WhatsApp, TypeMessage, StatusPresence } from '${pkg.name}';
-const wa = new WhatsApp({ server: "https://us.api-wa.me", key: "YOUR_KEY" });
+import { Wame, TypeMessage, StatusPresence } from '${pkg.name}';
+const wa = new Wame({ server: "https://us.api-wa.me", key: "YOUR_KEY" });
+// \`WhatsApp\` is exported as a deprecated alias of \`Wame\` (same behavior).
+
+## Multi-channel (WhatsApp / Instagram / Messenger)
+// \`provider\` selects the channel: "whatsapp" (default), "instagram", "messenger".
+// Set it per call on the send body, or as a client default via new Wame({ ..., provider }).
+await wa.message.send({ type: TypeMessage.TEXT, body: { to, text: "Hi", provider: "instagram" } });
+// Supported on: text, template, button, audio, image, video, document sends.
+// Webhook events expose provider, official, and (for messages) fromUserId + profile.
 
 ## Available Services
 ${serviceListLines.join('\n')}
@@ -263,7 +271,7 @@ ${typeBlocks.join('\n\n')}
 
 ## Custom HTTP Client
 \`\`\`typescript
-import { WhatsApp, IHttpClient, RequestOptions } from '${pkg.name}';
+import { Wame, IHttpClient, RequestOptions } from '${pkg.name}';
 
 class MyHttpClient implements IHttpClient {
   async request<T>(options: RequestOptions): Promise<T> {
@@ -271,7 +279,7 @@ class MyHttpClient implements IHttpClient {
   }
 }
 
-const wa = new WhatsApp(
+const wa = new Wame(
   { server: "https://us.api-wa.me", key: "YOUR_KEY" },
   new MyHttpClient()
 );

@@ -38,14 +38,65 @@ yarn add @raphaelvserafim/client-api-whatsapp
 ## Quick Start
 
 ```ts
-import { WhatsApp, TypeMessage, StatusPresence } from '@raphaelvserafim/client-api-whatsapp';
+import { Wame, TypeMessage, StatusPresence } from '@raphaelvserafim/client-api-whatsapp';
 
-const wa = new WhatsApp({ server: "https://us.api-wa.me", key: "YOUR_KEY" });
+const wa = new Wame({ server: "https://us.api-wa.me", key: "YOUR_KEY" });
 
 const to = "559999999999"; // Group: "123456789@g.us"
 ```
 
+> **`Wame` is the new main class.** `WhatsApp` is still exported as a deprecated
+> alias — `new WhatsApp(...)` behaves exactly like `new Wame(...)`, so existing
+> code keeps working.
+
 > **Backward Compatible:** All legacy methods (`wa.sendMessage()`, `wa.groups()`, etc.) still work. The new service-based API is optional.
+
+---
+
+## Multi-channel (WhatsApp / Instagram / Messenger)
+
+The same instance can send and receive through three providers: `whatsapp`
+(default), `instagram`, and `messenger`. Choose the channel per call, or set a
+default on the client.
+
+```ts
+import { Wame, TypeMessage } from '@raphaelvserafim/client-api-whatsapp';
+
+const wa = new Wame({ server: "https://us.api-wa.me", key: "YOUR_KEY" });
+
+// WhatsApp (default when `provider` is omitted)
+await wa.message.send({
+  type: TypeMessage.TEXT,
+  body: { to: "14375223417", text: "Oi pelo WhatsApp" },
+});
+
+// Instagram — same method, just set `provider` on the body
+await wa.message.send({
+  type: TypeMessage.TEXT,
+  body: { to: "1706703714041372", text: "Oi pelo Instagram", provider: "instagram" },
+});
+
+// Messenger
+await wa.message.send({
+  type: TypeMessage.TEXT,
+  body: { to: "26074916992161035", text: "Oi pelo Messenger", provider: "messenger" },
+});
+```
+
+Set a **default provider** on the client when an instance is dedicated to one
+channel — every send uses it unless a call overrides it:
+
+```ts
+const ig = new Wame({ server: "https://us.api-wa.me", key: "YOUR_KEY", provider: "instagram" });
+
+await ig.message.send({ type: TypeMessage.TEXT, body: { to, text: "Oi" } });                  // instagram
+await ig.message.send({ type: TypeMessage.TEXT, body: { to, text: "Oi", provider: "whatsapp" } }); // override
+```
+
+Provider resolution: an explicit `body.provider` wins; otherwise the client
+default is used; otherwise the field is omitted and the API assumes `whatsapp`.
+`provider` is supported on text, template, button, audio, image, video, and
+document sends.
 
 ---
 
@@ -137,10 +188,14 @@ app.use(express.json());
 
 app.post("/webhook", (req, res) => {
   for (const event of parseWebhook(req.body)) {
-    // event.instanceId / event.metadata.phoneNumberId are always available
+    // event.instanceId / event.metadata.phoneNumberId are always available.
+    // event.provider ("whatsapp" | "instagram" | "messenger") and
+    // event.official (boolean) tell you which channel the event came from.
     switch (event.type) {
       case "text":
-        console.log(`${event.from}: ${event.text.body}`);
+        console.log(`[${event.provider}] ${event.from}: ${event.text.body}`);
+        if (event.profile) console.log("from:", event.profile.name, event.profile.username);
+        if (event.fromUserId) console.log("user id:", event.fromUserId);
         if (event.context) console.log(`↪ reply to ${event.context.id}`);
         break;
       case "image":
@@ -191,8 +246,20 @@ Event `type` values: `text`, `image`, `audio`, `video`, `document`, `sticker`,
 `button-reply`, `referral`, `edit`, `unsupported`, `status`, `presence`,
 `connection.open`, `connection.close`, `qrcode`, `call`, `group.participants`,
 `group.update`, `health`, `unknown`. Every event also carries `instanceId`,
-`metadata`, `field` and `raw` (the original envelope) — see the exported
-`WhatsAppWebhookEvent` union for full typings.
+`metadata`, `field`, `provider`, `official` and `raw` (the original envelope).
+Message events additionally expose `fromUserId` (the provider-scoped sender id)
+and `profile` (`name` / `username` / `picture`), which Instagram and Messenger
+populate. See the exported `WhatsAppWebhookEvent` union for full typings.
+
+Instagram / Messenger deliver the same normalized shape — only `provider`,
+`fromUserId` and `profile` differ:
+
+```ts
+// Instagram text message → { type: "text", provider: "instagram", official: true,
+//   from: "1706703714041372", fromUserId: "1706703714041372",
+//   profile: { name: "Koalla", username: "koalla.io", picture: "https://..." },
+//   text: { body: "Oi" } }
+```
 
 ## Messages
 
@@ -908,7 +975,7 @@ await wa.conversation.updateComponents({
 You can inject your own HTTP client (e.g., `fetch`, `got`, `undici`) for full control:
 
 ```ts
-import { WhatsApp, IHttpClient, RequestOptions } from '@raphaelvserafim/client-api-whatsapp';
+import { Wame, IHttpClient, RequestOptions } from '@raphaelvserafim/client-api-whatsapp';
 
 class MyHttpClient implements IHttpClient {
   async request<T>(options: RequestOptions): Promise<T> {
@@ -921,7 +988,7 @@ class MyHttpClient implements IHttpClient {
   }
 }
 
-const wa = new WhatsApp(
+const wa = new Wame(
   { server: "https://us.api-wa.me", key: "MY_KEY" },
   new MyHttpClient(),
 );

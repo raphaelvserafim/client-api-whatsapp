@@ -1,13 +1,21 @@
 # @raphaelvserafim/client-api-whatsapp
 > With our API, you can send text, audio, video, and image messages quickly and easily. Adapt to your business communication needs comprehensively.
-Version: 1.7.0
+Version: 1.8.0
 
 ## Installation
 npm i @raphaelvserafim/client-api-whatsapp
 
 ## Initialization
-import { WhatsApp, TypeMessage, StatusPresence } from '@raphaelvserafim/client-api-whatsapp';
-const wa = new WhatsApp({ server: "https://us.api-wa.me", key: "YOUR_KEY" });
+import { Wame, TypeMessage, StatusPresence } from '@raphaelvserafim/client-api-whatsapp';
+const wa = new Wame({ server: "https://us.api-wa.me", key: "YOUR_KEY" });
+// `WhatsApp` is exported as a deprecated alias of `Wame` (same behavior).
+
+## Multi-channel (WhatsApp / Instagram / Messenger)
+// `provider` selects the channel: "whatsapp" (default), "instagram", "messenger".
+// Set it per call on the send body, or as a client default via new Wame({ ..., provider }).
+await wa.message.send({ type: TypeMessage.TEXT, body: { to, text: "Hi", provider: "instagram" } });
+// Supported on: text, template, button, audio, image, video, document sends.
+// Webhook events expose provider, official, and (for messages) fromUserId + profile.
 
 ## Available Services
 - wa.instance → InstanceService
@@ -130,6 +138,7 @@ await wa.message.list("phoneNumber", 0, 0);
         subtotal?: string;
         totalAmount?: string;
         items?: Items[];
+        provider?: Provider;
       };
     }, reply?: boolean): Promise<SendMessageRoot>
 await wa.message.send({ /* data */ }, false);
@@ -573,6 +582,8 @@ await wa.conversation.updateComponents({ /* ConversationComponentsData */ });
 export interface Init {
   server: string;
   key: string;
+  /** Default provider applied to every send unless overridden per-call. */
+  provider?: Provider;
 }
 
 export enum HttpMethod {
@@ -993,6 +1004,7 @@ export interface SendTemplateData {
   name: string;
   language?: string;
   components?: TemplateComponent[];
+  provider?: Provider;
 }
 
 export interface TemplateComponent {
@@ -1103,7 +1115,7 @@ export interface ConversationComponentsData {
 
 ## Custom HTTP Client
 ```typescript
-import { WhatsApp, IHttpClient, RequestOptions } from '@raphaelvserafim/client-api-whatsapp';
+import { Wame, IHttpClient, RequestOptions } from '@raphaelvserafim/client-api-whatsapp';
 
 class MyHttpClient implements IHttpClient {
   async request<T>(options: RequestOptions): Promise<T> {
@@ -1111,7 +1123,7 @@ class MyHttpClient implements IHttpClient {
   }
 }
 
-const wa = new WhatsApp(
+const wa = new Wame(
   { server: "https://us.api-wa.me", key: "YOUR_KEY" },
   new MyHttpClient()
 );

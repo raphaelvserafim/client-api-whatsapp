@@ -14,6 +14,7 @@ import {
   WebhookContactCard,
   WebhookReferral,
   WebhookStatusValue,
+  WebhookSenderProfile,
 } from './types';
 
 function isObject(value: unknown): value is Record<string, any> {
@@ -37,6 +38,24 @@ function toMedia(raw: any): WebhookMedia {
   };
 }
 
+/** Find the contact entry matching this message and map its profile. */
+function resolveProfile(msg: any, contacts: any): WebhookSenderProfile | undefined {
+  if (!Array.isArray(contacts) || contacts.length === 0) return undefined;
+  const match =
+    contacts.find(
+      (c: any) =>
+        (msg?.from_user_id && c?.user_id === msg.from_user_id) ||
+        (msg?.from && c?.wa_id === msg.from),
+    ) ?? contacts[0];
+  const profile = match?.profile;
+  if (!isObject(profile)) return undefined;
+  const mapped: WebhookSenderProfile = {};
+  if (profile.name !== undefined) mapped.name = profile.name;
+  if (profile.username !== undefined) mapped.username = profile.username;
+  if (profile.picture !== undefined) mapped.picture = profile.picture;
+  return Object.keys(mapped).length > 0 ? mapped : undefined;
+}
+
 function toReferral(raw: any): WebhookReferral {
   return {
     sourceUrl: raw?.source_url,
@@ -52,7 +71,7 @@ function toReferral(raw: any): WebhookReferral {
  * Parse a single message object (Meta format) into a normalized event.
  * Falls back to an `unsupported` event when the message type is unknown.
  */
-function mapMessage(msg: any, base: WebhookEventBase): WebhookMessageEvent {
+function mapMessage(msg: any, base: WebhookEventBase, contacts?: any): WebhookMessageEvent {
   const messageBase: MessageEventBase = {
     ...base,
     field: 'messages',
@@ -61,6 +80,9 @@ function mapMessage(msg: any, base: WebhookEventBase): WebhookMessageEvent {
     timestamp: msg?.timestamp,
   };
 
+  if (msg?.from_user_id) messageBase.fromUserId = msg.from_user_id;
+  const profile = resolveProfile(msg, contacts);
+  if (profile) messageBase.profile = profile;
   if (msg?.from_me === true) messageBase.fromMe = true;
   if (msg?.group_id) messageBase.groupId = msg.group_id;
   if (isObject(msg?.context)) {
@@ -181,7 +203,7 @@ function mapChange(
   switch (change?.field) {
     case 'messages': {
       if (Array.isArray(value.messages)) {
-        for (const msg of value.messages) events.push(mapMessage(msg, base));
+        for (const msg of value.messages) events.push(mapMessage(msg, base, value.contacts));
       }
       if (Array.isArray(value.statuses)) {
         for (const st of value.statuses) {
@@ -337,6 +359,8 @@ export function parseWebhook(body: unknown): WhatsAppWebhookEvent[] {
         field: change.field,
         raw: envelope,
       };
+      if (envelope.provider !== undefined) base.provider = envelope.provider;
+      if (envelope.official !== undefined) base.official = envelope.official;
       events.push(...mapChange(change, base));
     }
   }
