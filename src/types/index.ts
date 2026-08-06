@@ -78,6 +78,9 @@ export interface ApiResponse {
 }
 
 
+/** Outgoing webhook payload format: "native" (default), "meta" (Cloud API envelope), or "both". */
+export type WebhookFormat = 'native' | 'meta' | 'both';
+
 export interface WebhookBody {
   allowWebhook: boolean;
   allowNumber?: string;
@@ -87,6 +90,8 @@ export interface WebhookBody {
   webhookQrCode: string;
   webhookMessageFromMe: string;
   webhookHistory: string;
+  /** Set to "meta" (or "both") so incoming payloads use the envelope `parseWebhook` expects. */
+  webhookFormat?: WebhookFormat;
 }
 
 export interface Contact {

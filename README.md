@@ -136,6 +136,7 @@ await wa.instance.updateWebhook({
   webhookQrCode: "",
   webhookMessageFromMe: "",
   webhookHistory: "",
+  webhookFormat: "meta", // "native" (default) | "meta" | "both" — use "meta" for parseWebhook()
 });
 
 // Webhook Statistics

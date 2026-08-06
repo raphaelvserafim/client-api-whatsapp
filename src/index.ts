@@ -50,7 +50,7 @@ export { ConversationService } from './services/ConversationService';
 // Types
 export {
   Init, Provider, HttpMethod, Routes, TypeMessage, StatusPresence,
-  ApiResponse, WebhookBody, Contact, Location, Row, Section,
+  ApiResponse, WebhookBody, WebhookFormat, Contact, Location, Row, Section,
   Buttons, Items, HeaderMedia, DownloadableMessage, Product,
   CommunityCreate, CommunityUpdate, GroupParticipantsAction,
   InfoInstance, Instance, User, Webhook, BusinessProfile,
