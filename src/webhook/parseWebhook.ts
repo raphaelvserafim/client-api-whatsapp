@@ -15,6 +15,8 @@ import {
   WebhookReferral,
   WebhookStatusValue,
   WebhookSenderProfile,
+  WebhookError,
+  WebhookMessageContext,
 } from './types';
 
 function isObject(value: unknown): value is Record<string, any> {
@@ -36,6 +38,16 @@ function toMedia(raw: any): WebhookMedia {
     sha256: raw?.sha256,
     caption: raw?.caption,
   };
+}
+
+/** Keep the original error keys and lift the nested `error_data.details`. */
+function toErrors(raw: any): WebhookError[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  return raw.map((err: any) => {
+    if (!isObject(err)) return err;
+    const details = err.error_data?.details ?? err.details;
+    return details !== undefined ? { ...err, details } : { ...err };
+  });
 }
 
 /** Find the contact entry matching this message and map its profile. */
@@ -64,6 +76,8 @@ function toReferral(raw: any): WebhookReferral {
     headline: raw?.headline,
     body: raw?.body,
     mediaType: raw?.media_type,
+    thumbnailUrl: raw?.thumbnail_url,
+    ctwaClid: raw?.ctwa_clid,
   };
 }
 
@@ -84,20 +98,28 @@ function mapMessage(msg: any, base: WebhookEventBase, contacts?: any): WebhookMe
   const profile = resolveProfile(msg, contacts);
   if (profile) messageBase.profile = profile;
   if (msg?.from_me === true) messageBase.fromMe = true;
+  if (msg?.chat_type) messageBase.chatType = msg.chat_type;
   if (msg?.group_id) messageBase.groupId = msg.group_id;
   if (isObject(msg?.context)) {
-    messageBase.context = { from: msg.context.from, id: msg.context.id };
+    const context: WebhookMessageContext = { from: msg.context.from, id: msg.context.id };
+    // Instagram story replies carry the story being replied to.
+    if (isObject(msg.context.story)) context.story = msg.context.story;
+    messageBase.context = context;
   }
   if (isObject(msg?.referral)) messageBase.referral = toReferral(msg.referral);
 
   // Edited messages carry an `edit` block regardless of the original type.
   if (isObject(msg?.edit)) {
+    // The new content lives in `edit.message` ({ type, text: { body } }).
+    const edited = isObject(msg.edit.message) ? msg.edit.message : undefined;
     return {
       ...messageBase,
       type: 'edit',
       edit: {
         originalMessageId: msg.edit.original_message_id ?? msg.edit.originalMessageId,
-        text: msg.edit.text?.body ?? msg.edit.text,
+        text: edited?.text?.body ?? msg.edit.text?.body ?? msg.edit.text,
+        messageType: edited?.type,
+        message: edited,
       },
     };
   }
@@ -181,7 +203,7 @@ function mapMessage(msg: any, base: WebhookEventBase, contacts?: any): WebhookMe
           },
         };
       }
-      return { ...messageBase, type: 'unsupported', errors: msg.errors };
+      return { ...messageBase, type: 'unsupported', errors: toErrors(msg.errors) };
     }
 
     default:
@@ -189,7 +211,7 @@ function mapMessage(msg: any, base: WebhookEventBase, contacts?: any): WebhookMe
       if (isObject(msg?.referral)) {
         return { ...messageBase, type: 'referral', referral: toReferral(msg.referral) };
       }
-      return { ...messageBase, type: 'unsupported', errors: msg?.errors };
+      return { ...messageBase, type: 'unsupported', errors: toErrors(msg?.errors) };
   }
 }
 
@@ -216,8 +238,8 @@ function mapChange(
             recipientId: st?.recipient_id,
             timestamp: st?.timestamp,
             recipientType: st?.recipient_type,
-            participantId: st?.participant_id,
-            errors: st?.errors,
+            participantId: st?.recipient_participant_id ?? st?.participant_id,
+            errors: toErrors(st?.errors),
             conversation: st?.conversation ?? null,
             pricing: st?.pricing ?? null,
           });
@@ -278,6 +300,7 @@ function mapChange(
           type: 'call',
           callId: c?.id,
           from: c?.from,
+          fromJid: c?.from_jid,
           status: c?.status,
           isVideo: c?.is_video,
           isGroup: c?.is_group,
@@ -360,6 +383,7 @@ export function parseWebhook(body: unknown): WhatsAppWebhookEvent[] {
         raw: envelope,
       };
       if (envelope.provider !== undefined) base.provider = envelope.provider;
+      if (envelope.instance !== undefined) base.instance = envelope.instance;
       if (envelope.official !== undefined) base.official = envelope.official;
       events.push(...mapChange(change, base));
     }

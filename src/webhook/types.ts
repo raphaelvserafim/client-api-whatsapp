@@ -42,6 +42,8 @@ export interface WameWebhookEnvelope {
   object: string;
   /** Channel this event came from: "whatsapp" | "instagram" | "messenger". */
   provider?: Provider;
+  /** Your instance key — the value you use in the API routes. */
+  instance?: string;
   /** True when delivered via the official Meta Cloud API (vs. unofficial/QR). */
   official?: boolean;
   entry: WameWebhookEntry[];
@@ -60,13 +62,20 @@ export interface WebhookError {
   code?: number;
   title?: string;
   message?: string;
+  /** Lifted from the incoming `error_data.details`. */
   details?: string;
   [key: string]: any;
 }
 
 export interface WebhookEventBase {
-  /** entry[].id — the instance identifier. */
+  /**
+   * entry[].id — the account identifier. On WhatsApp this derives from the
+   * instance; on Instagram/Messenger it is the IG/Page account id, so use
+   * `instance` (or `metadata.phoneNumberId`) to route by instance.
+   */
   instanceId: string;
+  /** Envelope `instance` — your instance key, on every channel. */
+  instance?: string;
   metadata: WebhookMetadata;
   /** Original event category ("messages", "connection", "groups", ...). */
   field: string;
@@ -81,8 +90,9 @@ export interface WebhookEventBase {
 // ==================== Media / sub-payloads ====================
 
 export interface WebhookMedia {
-  id: string;
-  /** GET {URL_SERVER}/{key}/message/{id}/media */
+  /** Media id. Absent on Instagram/Messenger, where only `url` is delivered. */
+  id?: string;
+  /** GET {URL_SERVER}/{key}/message/{id}/media — on Instagram/Messenger, the CDN URL. */
   url?: string;
   mimeType?: string;
   sha256?: string;
@@ -123,6 +133,11 @@ export interface WebhookContactCard {
 export interface WebhookMessageContext {
   from?: string;
   id: string;
+  /**
+   * Present when the message is a reply to a story (Instagram). `id` is the
+   * story id and `story.url` the story media.
+   */
+  story?: { url?: string; [key: string]: any };
 }
 
 export interface WebhookReferral {
@@ -132,6 +147,9 @@ export interface WebhookReferral {
   headline?: string;
   body?: string;
   mediaType?: string;
+  thumbnailUrl?: string;
+  /** Click-to-WhatsApp ad click id, for attribution. */
+  ctwaClid?: string;
 }
 
 // ==================== Message events (field: "messages") ====================
@@ -156,9 +174,11 @@ export interface MessageEventBase extends WebhookEventBase {
   timestamp?: string;
   /** True when the message was sent by the connected account (echo). */
   fromMe?: boolean;
+  /** Conversation kind, as reported by the payload (WhatsApp). */
+  chatType?: 'individual' | 'group';
   /** Group JID (e.g. "123-456@g.us") when the message came from a group. */
   groupId?: string;
-  /** Quoted message, when this is a reply. */
+  /** Quoted message, when this is a reply (or the story, on Instagram replies). */
   context?: WebhookMessageContext;
   /** Click-to-WhatsApp / ad referral attached to the message. */
   referral?: WebhookReferral;
@@ -236,7 +256,16 @@ export interface ReferralMessageEvent extends MessageEventBase {
 
 export interface EditMessageEvent extends MessageEventBase {
   type: 'edit';
-  edit: { originalMessageId: string; text?: string };
+  edit: {
+    /** Id of the message that was edited. */
+    originalMessageId: string;
+    /** New body, when the edited message is a text message. */
+    text?: string;
+    /** Type of the edited message ("text", "image", ...). */
+    messageType?: string;
+    /** The full edited message object, for types other than text. */
+    message?: any;
+  };
 }
 
 export interface UnsupportedMessageEvent extends MessageEventBase {
@@ -270,11 +299,12 @@ export interface StatusEvent extends WebhookEventBase {
   field: 'messages';
   type: 'status';
   status: WebhookStatusValue;
-  messageId: string;
+  /** Id of the message this receipt refers to. Absent on Messenger read receipts. */
+  messageId?: string;
   recipientId?: string;
   timestamp?: string;
   recipientType?: 'individual' | 'group';
-  /** Participant JID for group message status. */
+  /** Participant JID for group message status (recipient_participant_id). */
   participantId?: string;
   errors?: WebhookError[];
   /** Meta-compatibility placeholders, usually null on this API. */
@@ -323,6 +353,8 @@ export interface CallEvent extends WebhookEventBase {
   type: 'call';
   callId: string;
   from: string;
+  /** Full JID of the caller (e.g. "5511999998888@s.whatsapp.net"). */
+  fromJid?: string;
   /** e.g. "offer" */
   status: string;
   isVideo?: boolean;

@@ -1,6 +1,6 @@
 # @raphaelvserafim/client-api-whatsapp
 > With our API, you can send text, audio, video, and image messages quickly and easily. Adapt to your business communication needs comprehensively.
-Version: 1.8.0
+Version: 1.9.0
 
 ## Installation
 npm i @raphaelvserafim/client-api-whatsapp
@@ -15,7 +15,9 @@ const wa = new Wame({ server: "https://us.api-wa.me", key: "YOUR_KEY" });
 // Set it per call on the send body, or as a client default via new Wame({ ..., provider }).
 await wa.message.send({ type: TypeMessage.TEXT, body: { to, text: "Hi", provider: "instagram" } });
 // Supported on: text, template, button, audio, image, video, document sends.
-// Webhook events expose provider, official, and (for messages) fromUserId + profile.
+// Webhook events expose provider, official, instance (your instance key — route by it,
+// since instanceId is the IG/Page account id on Instagram/Messenger) and, for messages,
+// fromUserId + profile + chatType. Instagram story replies carry context.story.url.
 
 ## Available Services
 - wa.instance → InstanceService
@@ -660,6 +662,8 @@ export interface WebhookBody {
   webhookQrCode: string;
   webhookMessageFromMe: string;
   webhookHistory: string;
+  /** Set to "meta" (or "both") so incoming payloads use the envelope `parseWebhook` expects. */
+  webhookFormat?: WebhookFormat;
 }
 
 export interface Contact {

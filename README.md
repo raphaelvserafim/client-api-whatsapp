@@ -189,7 +189,7 @@ app.use(express.json());
 
 app.post("/webhook", (req, res) => {
   for (const event of parseWebhook(req.body)) {
-    // event.instanceId / event.metadata.phoneNumberId are always available.
+    // event.instance is your instance key on every channel — use it to route.
     // event.provider ("whatsapp" | "instagram" | "messenger") and
     // event.official (boolean) tell you which channel the event came from.
     switch (event.type) {
@@ -197,7 +197,8 @@ app.post("/webhook", (req, res) => {
         console.log(`[${event.provider}] ${event.from}: ${event.text.body}`);
         if (event.profile) console.log("from:", event.profile.name, event.profile.username);
         if (event.fromUserId) console.log("user id:", event.fromUserId);
-        if (event.context) console.log(`↪ reply to ${event.context.id}`);
+        if (event.context?.story) console.log("↪ story reply:", event.context.story.url);
+        else if (event.context) console.log(`↪ reply to ${event.context.id}`);
         break;
       case "image":
         console.log("image url:", event.image.url);
@@ -213,6 +214,10 @@ app.post("/webhook", (req, res) => {
         break;
       case "status":
         console.log("message", event.messageId, "is", event.status);
+        if (event.errors?.length) console.log("error:", event.errors[0].code, event.errors[0].details);
+        break;
+      case "edit":
+        console.log("message", event.edit.originalMessageId, "edited to:", event.edit.text);
         break;
       case "connection.open":
         console.log("connected");
@@ -246,11 +251,16 @@ Event `type` values: `text`, `image`, `audio`, `video`, `document`, `sticker`,
 `location`, `contacts`, `reaction`, `reaction-removed`, `button`, `list-reply`,
 `button-reply`, `referral`, `edit`, `unsupported`, `status`, `presence`,
 `connection.open`, `connection.close`, `qrcode`, `call`, `group.participants`,
-`group.update`, `health`, `unknown`. Every event also carries `instanceId`,
-`metadata`, `field`, `provider`, `official` and `raw` (the original envelope).
-Message events additionally expose `fromUserId` (the provider-scoped sender id)
-and `profile` (`name` / `username` / `picture`), which Instagram and Messenger
-populate. See the exported `WhatsAppWebhookEvent` union for full typings.
+`group.update`, `health`, `unknown`. Every event also carries `instance` (your
+instance key), `instanceId`, `metadata`, `field`, `provider`, `official` and
+`raw` (the original envelope). Message events additionally expose `fromUserId`
+(the provider-scoped sender id), `profile` (`name` / `username` / `picture`) —
+both populated by Instagram and Messenger — and `chatType` (`"individual"` /
+`"group"`) on WhatsApp. See the exported `WhatsAppWebhookEvent` union for full
+typings.
+
+> Route by `event.instance`, not `event.instanceId`: on Instagram and Messenger
+> `instanceId` is the IG/Page account id, not your instance key.
 
 Instagram / Messenger deliver the same normalized shape — only `provider`,
 `fromUserId` and `profile` differ:
@@ -261,6 +271,19 @@ Instagram / Messenger deliver the same normalized shape — only `provider`,
 //   profile: { name: "Koalla", username: "koalla.io", picture: "https://..." },
 //   text: { body: "Oi" } }
 ```
+
+Instagram-specific notes:
+
+- **Story reply** — a `text` event whose `context.story.url` holds the story
+  media; `context.id` is the story id. That is what distinguishes it from a
+  regular reply, which has no `story`.
+- **Story mention** — arrives as a plain `image` event; the payload carries no
+  marker separating it from a normal photo.
+- **Reels** — arrive as a `video` event whose `video.url` is the public reel
+  permalink (`https://www.instagram.com/reel/...`), not a CDN file.
+- **Media has no `id`** on Instagram/Messenger, only `url` (the CDN link);
+  `WebhookMedia.id` is therefore optional. Messenger read receipts also arrive
+  without `messageId`.
 
 ## Messages
 

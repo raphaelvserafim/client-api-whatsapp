@@ -257,7 +257,9 @@ const wa = new Wame({ server: "https://us.api-wa.me", key: "YOUR_KEY" });
 // Set it per call on the send body, or as a client default via new Wame({ ..., provider }).
 await wa.message.send({ type: TypeMessage.TEXT, body: { to, text: "Hi", provider: "instagram" } });
 // Supported on: text, template, button, audio, image, video, document sends.
-// Webhook events expose provider, official, and (for messages) fromUserId + profile.
+// Webhook events expose provider, official, instance (your instance key — route by it,
+// since instanceId is the IG/Page account id on Instagram/Messenger) and, for messages,
+// fromUserId + profile + chatType. Instagram story replies carry context.story.url.
 
 ## Available Services
 ${serviceListLines.join('\n')}
