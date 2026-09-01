@@ -98,6 +98,11 @@ default is used; otherwise the field is omitted and the API assumes `whatsapp`.
 `provider` is supported on text, template, button, audio, image, video, and
 document sends.
 
+The same rule applies when **reading**: `wa.chat.list(provider)` returns the
+chats of one channel — see [Chat](#chat). Contacts are not filtered
+server-side; every entry is tagged with its `channel` instead — see
+[Contacts](#contacts).
+
 ---
 
 ## Instance
@@ -613,12 +618,83 @@ await wa.message.keep("MESSAGE_ID");
 
 ## Chat
 
-```ts
-// List all chats
-const chats = await wa.chat.list();
+### List chats (one channel at a time)
 
-// Get messages from a chat
-const msgs = await wa.chat.messages("559999999999@s.whatsapp.net");
+`wa.chat.list()` returns the chats — individual and group — of **one** channel,
+newest first. WhatsApp, Instagram and Messenger conversations share the same
+storage, so without a channel they would come back mixed: an Instagram IGSID
+and a Messenger PSID look just like phone numbers in `chatId`. Pass `provider`
+to pick the channel — `whatsapp` (default), `instagram` or `messenger`.
+
+```ts
+const { provider, chats } = await wa.chat.list();            // whatsapp (default)
+const ig = await wa.chat.list("instagram");
+const ms = await wa.chat.list("messenger");
+```
+
+Each entry carries the last message timestamp, the stored message count, the
+`channel` it belongs to, and the `contact` behind it:
+
+```jsonc
+{
+  "status": 200,
+  "provider": "whatsapp",
+  "message": "Chats retrieved successfully",
+  "chats": [
+    {
+      "chatId": "5511999999999@s.whatsapp.net", // JID on Baileys; bare digits / IGSID / PSID otherwise
+      "lastMessageTimestamp": 1756680000000,    // epoch ms, 0 when unknown — list is sorted by this, desc
+      "messageCount": 42,
+      "channel": "whatsapp",                    // "whatsapp" | "instagram" | "messenger"
+      "contact": { "phone": "5511999999999", "name": "Emily Montanha" } // name is "" when not in the address book
+    }
+  ]
+}
+```
+
+Two caveats worth coding against:
+
+- **`chats` can be `string[]`.** On the MongoDB fallback path the server can
+  only return the chat ids, so the type is `ChatListItem[] | string[]`. Narrow
+  before reading fields:
+
+  ```ts
+  for (const chat of chats) {
+    if (typeof chat === "string") continue;   // fallback: id only
+    console.log(chat.chatId, chat.contact.name, chat.messageCount);
+  }
+  ```
+
+- **Asking for a channel the instance does not have connected returns 422** —
+  the SDK throws `WhatsAppError` with the reason in `responseBody.message`. An
+  unrecognized `provider` value fails the same way.
+
+  ```ts
+  try {
+    await wa.chat.list("messenger");
+  } catch (e) {
+    if (e instanceof WhatsAppError && e.statusCode === 422) {
+      console.error(e.responseBody);
+      // { status: 422, message: 'Canal "messenger" não está conectado nesta instância. Conectados: whatsapp.' }
+    }
+  }
+  ```
+
+A client-level default provider is honored here too, so an instance dedicated
+to one channel never has to repeat it:
+
+```ts
+const ig = new Wame({ server: "https://us.api-wa.me", key: "YOUR_KEY", provider: "instagram" });
+await ig.chat.list();              // instagram
+await ig.chat.list("whatsapp");    // per-call override
+```
+
+### Other chat operations
+
+```ts
+// Get messages from a chat — { status, messages, pagination: { page, limit, hasMore } }
+// No provider here: the channel is resolved from the chatId returned by chat.list().
+const { messages, pagination } = await wa.chat.messages("559999999999@s.whatsapp.net", 1, 50);
 
 // Mark as read
 await wa.chat.modify("559999999999@s.whatsapp.net", "markRead", true);
@@ -683,10 +759,51 @@ await wa.label.delete("label_id");
 
 ## Contacts
 
-```ts
-// List all contacts
-const contacts = await wa.contact.list();
+### List contacts (all channels, tagged)
 
+The address book is shared by every channel, so each entry carries the
+`channel` it belongs to. Their ids all live in the same `number` field: phone
+digits on WhatsApp, an IGSID on Instagram, a PSID on Messenger — they look
+alike, and `channel` is what tells them apart.
+
+```ts
+const { total, contacts } = await wa.contact.list();
+```
+
+```jsonc
+{
+  "status": 200,
+  "total": 2,
+  "message": "Contacts fetched successfully",
+  "contacts": [
+    {
+      "number": "12393020153",       // phone digits | IGSID | PSID
+      "name": "Emily Montanha",      // "" when the contact has no known name
+      "channel": "whatsapp"          // "whatsapp" | "instagram" | "messenger"
+    },
+    {
+      "number": "1706703714041372",
+      "name": "Koalla",
+      "channel": "instagram",
+      "pictureUrl": "https://...",   // optional — signed Meta URL, expires
+      "username": "koalla.io"        // optional — Instagram @handle only
+    }
+  ]
+}
+```
+
+Unlike `wa.chat.list()`, this endpoint takes **no** `provider` filter — it
+always returns everything. Filter client-side, or use the `listByChannel`
+helper, which does the same thing for you:
+
+```ts
+const instagram = contacts.filter(c => c.channel === "instagram");
+const messenger = await wa.contact.listByChannel("messenger"); // same fetch, filtered
+```
+
+### Other contact operations
+
+```ts
 // Get contact profile
 const profile = await wa.contact.profile("559999999999");
 

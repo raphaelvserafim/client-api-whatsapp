@@ -168,8 +168,24 @@ function parseParams(raw) {
 // ---------------------------------------------------------------------------
 // 4. Generate example arguments based on type
 // ---------------------------------------------------------------------------
+// Exported string-literal unions (`export type Provider = 'whatsapp' | ...`),
+// so a param typed `Provider` renders as "whatsapp" rather than an object.
+const STRING_UNION_ALIASES = (() => {
+  const src = fs.readFileSync(path.join(SRC, 'types', 'index.ts'), 'utf-8');
+  const map = {};
+  const re = /^export\s+type\s+(\w+)\s*=\s*((?:\s*\|?\s*'[^']*')+)\s*;/gm;
+  let am;
+  while ((am = re.exec(src)) !== null) {
+    map[am[1]] = am[2].match(/'([^']*)'/)[1];
+  }
+  return map;
+})();
+
 function exampleValue(paramName, type) {
   const t = type.trim();
+
+  // Named string-literal union (e.g. Provider) — pick first member
+  if (STRING_UNION_ALIASES[t]) return `"${STRING_UNION_ALIASES[t]}"`;
 
   // String literal union — pick first
   if (/^['"]/.test(t) || /^\(?\s*['"]/.test(t)) {
@@ -199,8 +215,19 @@ const typesSrc = fs.readFileSync(path.join(SRC, 'types', 'index.ts'), 'utf-8');
 
 function extractTypeDefinitions(src) {
   const blocks = [];
+  // `export type X = ...;` aliases first — they are referenced by the
+  // interfaces below (e.g. Provider), so define them before use.
+  // `DOC` matches an immediately-preceding jsdoc block. The inner alternation
+  // is tempered so it cannot run past its own `*/` and swallow the
+  // declarations in between.
+  const DOC = String.raw`(?:\/\*\*(?:[^*]|\*(?!\/))*\*\/\n)?`;
+  const aliasRe = new RegExp(`^${DOC}export\\s+type\\s+\\w+\\s*=[^;]*?;$`, 'gm');
+  let am;
+  while ((am = aliasRe.exec(src)) !== null) {
+    blocks.push(am[0]);
+  }
   // Match `export interface ...` and `export enum ...` blocks
-  const blockRe = /^export\s+(interface|enum)\s+(\w+)[\s\S]*?^}/gm;
+  const blockRe = new RegExp(`^${DOC}export\\s+(interface|enum)\\s+(\\w+)[\\s\\S]*?^}`, 'gm');
   let bm;
   while ((bm = blockRe.exec(src)) !== null) {
     blocks.push(bm[0]);

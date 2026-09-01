@@ -315,6 +315,42 @@ export interface ContactInfo {
 }
 
 
+/**
+ * One entry of `GET /contacts` (`wa.contact.list()`).
+ *
+ * The address book is shared by every channel, so each entry carries the
+ * `channel` it belongs to — WhatsApp phone numbers, Instagram IGSIDs and
+ * Messenger PSIDs all live in `number` and look alike. Filter client-side by
+ * `channel` when you need one channel only; the endpoint takes no query params.
+ */
+export interface ContactListItem {
+  /**
+   * Platform identifier: phone digits on WhatsApp, IGSID on Instagram,
+   * PSID on Messenger. Never a JID — no `@s.whatsapp.net` suffix.
+   */
+  number: string;
+  /** Saved/display name. Empty string when the contact has no known name. */
+  name: string;
+  /** Channel this contact belongs to. Legacy rows are reported as `whatsapp`. */
+  channel: Provider;
+  /** Signed Meta profile-picture URL. Absent when unknown; expires over time. */
+  pictureUrl?: string;
+  /** Instagram @handle. Only present on Instagram contacts. */
+  username?: string;
+}
+
+
+/** Response of `GET /contacts` (`wa.contact.list()`). */
+export interface ListContactsResponse {
+  status: number;
+  /** Number of entries in `contacts`. */
+  total: number;
+  contacts: ContactListItem[];
+  /** `Contacts fetched successfully` or `No contacts cached`. */
+  message?: string;
+}
+
+
 export interface GroupInfo {
   id: string;
   subject: string;
@@ -341,6 +377,75 @@ export interface ChatInfo {
   name?: string;
   timestamp?: number;
   unreadCount?: number;
+}
+
+
+/** The contact behind a chat, as returned inside {@link ChatListItem}. */
+export interface ChatContact {
+  /**
+   * Phone digits of the chat, or the address-book phone when the chat was
+   * matched by LID. On Instagram/Messenger this holds the IGSID/PSID.
+   */
+  phone: string;
+  /** Address-book name. Empty string when the contact is not saved. */
+  name: string;
+}
+
+
+/**
+ * One entry of `GET /chat` (`wa.chat.list()`) — an individual or group chat of
+ * a single channel.
+ */
+export interface ChatListItem {
+  /**
+   * Storage key of the chat. A JID (`5511999999999@s.whatsapp.net`,
+   * `...@g.us`) on the Baileys path; bare digits / IGSID / PSID on the
+   * official Cloud API, Instagram and Messenger paths.
+   */
+  chatId: string;
+  /** Epoch milliseconds of the last message; `0` when unknown. Chats come sorted by this, newest first. */
+  lastMessageTimestamp: number;
+  /** Stored message count for the chat. */
+  messageCount: number;
+  /** Channel this chat belongs to. Legacy rows are reported as `whatsapp`. */
+  channel: Provider;
+  /** Contact behind the chat. `name` is empty when not in the address book. */
+  contact: ChatContact;
+}
+
+
+/**
+ * Response of `GET /chat` (`wa.chat.list()`).
+ *
+ * `chats` is normally a {@link ChatListItem} array. On the MongoDB fallback
+ * path the server can only return the chat ids, so it may also come back as a
+ * `string[]` — narrow with `typeof chat === 'string'` before reading fields.
+ */
+export interface ListChatsResponse {
+  status: number;
+  /** Channel the list was resolved for — the requested `provider`, or `whatsapp`. */
+  provider?: Provider;
+  chats: ChatListItem[] | string[];
+  /** `Chats retrieved successfully`, `No chats found`, or the error text on 4xx/5xx. */
+  message?: string;
+}
+
+
+/** Pagination block returned by `GET /chat/messages`. */
+export interface ChatMessagesPagination {
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
+
+/** Response of `GET /chat/messages` (`wa.chat.messages()`). */
+export interface ChatMessagesResponse {
+  status: number;
+  messages: MessageData[];
+  pagination?: ChatMessagesPagination;
+  /** Present instead of `messages` when the request fails. */
+  message?: string;
 }
 
 

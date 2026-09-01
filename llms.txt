@@ -1,6 +1,6 @@
 # @raphaelvserafim/client-api-whatsapp
 > With our API, you can send text, audio, video, and image messages quickly and easily. Adapt to your business communication needs comprehensively.
-Version: 1.9.0
+Version: 2.0.0
 
 ## Installation
 npm i @raphaelvserafim/client-api-whatsapp
@@ -236,8 +236,8 @@ await wa.message.update("id", "text");
 await wa.message.keep("id");
 
 ## wa.chat
-// list(): Promise<{ status: number; data: ChatInfo[] }>
-await wa.chat.list();
+// list(provider?: Provider): Promise<ListChatsResponse>
+await wa.chat.list("whatsapp");
 
 // modify(id: string, action: 'markRead' | 'pin', value: boolean): Promise<ApiResponse>
 await wa.chat.modify("id", "markRead", false);
@@ -245,7 +245,7 @@ await wa.chat.modify("id", "markRead", false);
 // delete(chatId: string): Promise<ApiResponse>
 await wa.chat.delete("chatId");
 
-// messages(chatId: string, page?: number, limit?: number): Promise<{ status: number; data: MessageData[] }>
+// messages(chatId: string, page?: number, limit?: number): Promise<ChatMessagesResponse>
 await wa.chat.messages("chatId", 0, 0);
 
 // presenceSubscribe(jid: string): Promise<ApiResponse>
@@ -303,8 +303,11 @@ await wa.action.downloadMedia("image", { /* DownloadableMessage */ });
 await wa.action.deleteStorage();
 
 ## wa.contact
-// list(): Promise<{ status: number; data: ContactInfo[] }>
+// list(): Promise<ListContactsResponse>
 await wa.contact.list();
+
+// listByChannel(channel: Provider): Promise<ListContactsResponse>
+await wa.contact.listByChannel("whatsapp");
 
 // profile(id: string): Promise<{ status: number; data: ContactInfo }>
 await wa.contact.profile("id");
@@ -581,6 +584,12 @@ await wa.conversation.updateComponents({ /* ConversationComponentsData */ });
 
 ## Type Definitions
 ```typescript
+/** Provider channel a message is sent through / received from. */
+export type Provider = 'whatsapp' | 'instagram' | 'messenger';
+
+/** Outgoing webhook payload format: "native" (default), "meta" (Cloud API envelope), or "both". */
+export type WebhookFormat = 'native' | 'meta' | 'both';
+
 export interface Init {
   server: string;
   key: string;
@@ -870,6 +879,40 @@ export interface ContactInfo {
   imgUrl?: string;
 }
 
+/**
+ * One entry of `GET /contacts` (`wa.contact.list()`).
+ *
+ * The address book is shared by every channel, so each entry carries the
+ * `channel` it belongs to — WhatsApp phone numbers, Instagram IGSIDs and
+ * Messenger PSIDs all live in `number` and look alike. Filter client-side by
+ * `channel` when you need one channel only; the endpoint takes no query params.
+ */
+export interface ContactListItem {
+  /**
+   * Platform identifier: phone digits on WhatsApp, IGSID on Instagram,
+   * PSID on Messenger. Never a JID — no `@s.whatsapp.net` suffix.
+   */
+  number: string;
+  /** Saved/display name. Empty string when the contact has no known name. */
+  name: string;
+  /** Channel this contact belongs to. Legacy rows are reported as `whatsapp`. */
+  channel: Provider;
+  /** Signed Meta profile-picture URL. Absent when unknown; expires over time. */
+  pictureUrl?: string;
+  /** Instagram @handle. Only present on Instagram contacts. */
+  username?: string;
+}
+
+/** Response of `GET /contacts` (`wa.contact.list()`). */
+export interface ListContactsResponse {
+  status: number;
+  /** Number of entries in `contacts`. */
+  total: number;
+  contacts: ContactListItem[];
+  /** `Contacts fetched successfully` or `No contacts cached`. */
+  message?: string;
+}
+
 export interface GroupInfo {
   id: string;
   subject: string;
@@ -894,6 +937,70 @@ export interface ChatInfo {
   name?: string;
   timestamp?: number;
   unreadCount?: number;
+}
+
+/** The contact behind a chat, as returned inside {@link ChatListItem}. */
+export interface ChatContact {
+  /**
+   * Phone digits of the chat, or the address-book phone when the chat was
+   * matched by LID. On Instagram/Messenger this holds the IGSID/PSID.
+   */
+  phone: string;
+  /** Address-book name. Empty string when the contact is not saved. */
+  name: string;
+}
+
+/**
+ * One entry of `GET /chat` (`wa.chat.list()`) — an individual or group chat of
+ * a single channel.
+ */
+export interface ChatListItem {
+  /**
+   * Storage key of the chat. A JID (`5511999999999@s.whatsapp.net`,
+   * `...@g.us`) on the Baileys path; bare digits / IGSID / PSID on the
+   * official Cloud API, Instagram and Messenger paths.
+   */
+  chatId: string;
+  /** Epoch milliseconds of the last message; `0` when unknown. Chats come sorted by this, newest first. */
+  lastMessageTimestamp: number;
+  /** Stored message count for the chat. */
+  messageCount: number;
+  /** Channel this chat belongs to. Legacy rows are reported as `whatsapp`. */
+  channel: Provider;
+  /** Contact behind the chat. `name` is empty when not in the address book. */
+  contact: ChatContact;
+}
+
+/**
+ * Response of `GET /chat` (`wa.chat.list()`).
+ *
+ * `chats` is normally a {@link ChatListItem} array. On the MongoDB fallback
+ * path the server can only return the chat ids, so it may also come back as a
+ * `string[]` — narrow with `typeof chat === 'string'` before reading fields.
+ */
+export interface ListChatsResponse {
+  status: number;
+  /** Channel the list was resolved for — the requested `provider`, or `whatsapp`. */
+  provider?: Provider;
+  chats: ChatListItem[] | string[];
+  /** `Chats retrieved successfully`, `No chats found`, or the error text on 4xx/5xx. */
+  message?: string;
+}
+
+/** Pagination block returned by `GET /chat/messages`. */
+export interface ChatMessagesPagination {
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
+/** Response of `GET /chat/messages` (`wa.chat.messages()`). */
+export interface ChatMessagesResponse {
+  status: number;
+  messages: MessageData[];
+  pagination?: ChatMessagesPagination;
+  /** Present instead of `messages` when the request fails. */
+  message?: string;
 }
 
 export interface LabelInfo {
@@ -998,11 +1105,13 @@ export interface CommunityGroupCreate {
   participants?: string[];
 }
 
+/** Mark a message as read (POST /message/read). */
 export interface MarkReadData {
   messageId: string;
   typing?: boolean;
 }
 
+/** Send an approved template message (POST /message/template — official only). */
 export interface SendTemplateData {
   to: string;
   name: string;
@@ -1011,16 +1120,19 @@ export interface SendTemplateData {
   provider?: Provider;
 }
 
+/** A component of a WhatsApp message template (header/body/footer/buttons). */
 export interface TemplateComponent {
   type: string;
   [key: string]: unknown;
 }
 
+/** Tax details for an order (Payments BR). */
 export interface OrderTax {
   value?: number;
   description?: string;
 }
 
+/** A single line item of an order (Payments BR). */
 export interface OrderItem {
   name: string;
   amount: number;
@@ -1028,6 +1140,7 @@ export interface OrderItem {
   saleAmount?: number;
 }
 
+/** Send an order with a payment link (POST /message/order-details — Payments BR). */
 export interface OrderDetailsData {
   to: string;
   text: string;
@@ -1040,6 +1153,7 @@ export interface OrderDetailsData {
   items: OrderItem[];
 }
 
+/** Update an order status (POST /message/order-status — official only, Payments BR). */
 export interface OrderStatusData {
   to: string;
   referenceId: string;
@@ -1047,11 +1161,13 @@ export interface OrderStatusData {
   description?: string;
 }
 
+/** Request the recipient to share their location (POST /message/location-request). */
 export interface LocationRequestData {
   to: string;
   text: string;
 }
 
+/** Send a message with ad context (POST /message/ad). */
 export interface AdMessageData {
   to: string;
   text: string;
@@ -1063,6 +1179,7 @@ export interface AdMessageData {
   mentions?: string[];
 }
 
+/** Send a product list (POST /message/product-list — official only). */
 export interface ProductListData {
   to: string;
   header: string;
@@ -1072,17 +1189,20 @@ export interface ProductListData {
   catalogId: string;
 }
 
+/** Inject audio into an active call (POST /call/{callId}/audio). */
 export interface CallAudioData {
   file?: string;
   url?: string;
   base64?: string;
 }
 
+/** Commerce settings (GET/POST /business/commerce-settings — official only). */
 export interface CommerceSettings {
   isCartEnabled?: boolean;
   isCatalogVisible?: boolean;
 }
 
+/** Create a message template (POST /templates — official only). */
 export interface CreateTemplateData {
   name: string;
   language: string;
@@ -1091,17 +1211,20 @@ export interface CreateTemplateData {
   allow_category_change?: boolean;
 }
 
+/** Edit a message template (PUT /templates/{id} — official only). */
 export interface UpdateTemplateData {
   category?: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION';
   components?: TemplateComponent[];
 }
 
+/** Query range for analytics endpoints (official only). */
 export interface AnalyticsQuery {
   start?: string;
   end?: string;
   granularity?: string;
 }
 
+/** Control a call (POST /calling/call — official only). */
 export interface CallControlData {
   action: string;
   to?: string;
@@ -1110,6 +1233,7 @@ export interface CallControlData {
   sdpType?: string;
 }
 
+/** Conversational components (POST /conversation — official only). */
 export interface ConversationComponentsData {
   enableWelcomeMessage?: boolean;
   prompts?: unknown[];

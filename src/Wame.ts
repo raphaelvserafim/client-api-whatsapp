@@ -6,10 +6,11 @@ import {
   InfoInstance, SendMessageRoot, Connect, RegisteredResponse,
   ContactInfo, GroupInfo, InviteCodeResponse, ChatInfo, LabelInfo,
   CommunityInfo, CatalogResponse, WebhookStatistics, ListMessagesResponse,
-  DownloadMediaResponse, CallResponse, MessageData, GroupParticipant,
+  DownloadMediaResponse, CallResponse, GroupParticipant,
   LiveLocationData, SendContactsData, ProductMessageData, GroupInviteMessageData,
   StatusTextData, StatusMediaData, StatusMentionData, CommunityGroupCreate,
-  NewsletterInfo,
+  NewsletterInfo, Provider, ListChatsResponse, ListContactsResponse,
+  ChatMessagesResponse,
 } from './types';
 import { IHttpClient } from './client/IHttpClient';
 import { HttpClient } from './client/HttpClient';
@@ -53,7 +54,7 @@ export class Wame {
 
     this.instance = new InstanceService(client);
     this.message = new MessageService(client, data.provider);
-    this.chat = new ChatService(client);
+    this.chat = new ChatService(client, data.provider);
     this.call = new CallService(client);
     this.label = new LabelService(client);
     this.action = new ActionService(client);
@@ -136,10 +137,11 @@ export class Wame {
   keepMessage(id: string): Promise<ApiResponse> { return this.message.keep(id); }
 
   // Chat
-  getChats(): Promise<{ status: number; data: ChatInfo[] }> { return this.chat.list(); }
+  /** @param provider Channel to list: `whatsapp` (default), `instagram` or `messenger`. */
+  getChats(provider?: Provider): Promise<ListChatsResponse> { return this.chat.list(provider); }
   modifyChat(id: string, action: 'markRead' | 'pin', value: boolean): Promise<ApiResponse> { return this.chat.modify(id, action, value); }
   deleteChat(chatId: string): Promise<ApiResponse> { return this.chat.delete(chatId); }
-  getChatMessages(chatId: string, page?: number, limit?: number): Promise<{ status: number; data: MessageData[] }> { return this.chat.messages(chatId, page, limit); }
+  getChatMessages(chatId: string, page?: number, limit?: number): Promise<ChatMessagesResponse> { return this.chat.messages(chatId, page, limit); }
   presenceSubscribe(jid: string): Promise<ApiResponse> { return this.chat.presenceSubscribe(jid); }
   setDisappearing(jid: string, expiration: number): Promise<ApiResponse> { return this.chat.disappearing(jid, expiration); }
   getPrivacy(): Promise<ApiResponse> { return this.chat.privacy(); }
@@ -164,7 +166,7 @@ export class Wame {
   deleteStorage(): Promise<ApiResponse> { return this.action.deleteStorage(); }
 
   // Contacts
-  contacts(): Promise<{ status: number; data: ContactInfo[] }> { return this.contact.list(); }
+  contacts(): Promise<ListContactsResponse> { return this.contact.list(); }
   addContact(number: string, name: string): Promise<ApiResponse> { return this.contact.add(number, name); }
   contactProfile(id: string): Promise<{ status: number; data: ContactInfo }> { return this.contact.profile(id); }
   removeContact(number: string): Promise<ApiResponse> { return this.contact.remove(number); }
