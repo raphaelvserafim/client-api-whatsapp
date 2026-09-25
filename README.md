@@ -67,7 +67,7 @@ const wa = new Wame({ server: "https://us.api-wa.me", key: "YOUR_KEY" });
 // WhatsApp (default when `provider` is omitted)
 await wa.message.send({
   type: TypeMessage.TEXT,
-  body: { to: "14375223417", text: "Oi pelo WhatsApp" },
+  body: { to: "5566997145103", text: "Oi pelo WhatsApp" },
 });
 
 // Instagram — same method, just set `provider` on the body
