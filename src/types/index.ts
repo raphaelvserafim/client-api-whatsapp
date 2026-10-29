@@ -472,9 +472,67 @@ export interface CatalogResponse {
 }
 
 
+/** Resultado de um POST de webhook: o que respondia "qual status, qual erro?" só no log. */
+export interface WebhookDeliveryRecord {
+  /** ISO do momento em que o POST terminou. */
+  ts: string;
+  url: string;
+  /** Status HTTP do cliente. Ausente = a requisição não chegou a ter resposta. */
+  status?: number;
+  /** Duração do POST em ms. */
+  ms: number;
+  outcome: 'ok' | 'client-error' | 'failed';
+  error?: string;
+}
+
+export interface WebhookStatisticsData {
+  key: string;
+  /** true = conta oficial (WhatsApp Cloud API). */
+  official: boolean;
+  /** Config em vigor. `null` quando a instância ainda não tem webhook salvo. */
+  webhook: {
+    allowWebhook: boolean;
+    allowNumber: string;
+    webhookFormat?: 'native' | 'meta' | 'both';
+    /** Canais que têm URL de fato (ex.: ['webhookMessage']). */
+    configured: string[];
+    /** false = nenhuma URL; o evento sai só no socket. Causa nº 1 de "não recebo nada". */
+    anyUrl: boolean;
+  } | null;
+  /** Contadores REAIS desta instância. */
+  delivery: {
+    /** Despachado para a fila. Muito acima de `attempts` = fila parada. */
+    queued: number;
+    /** POST tentado. */
+    attempts: number;
+    /** Cliente respondeu 2xx. */
+    ok: number;
+    /** Cliente respondeu 4xx (exceto 429) — recusa, sem retry por desenho. */
+    clientError: number;
+    /** Timeout, 5xx ou 429 — com retry. */
+    failed: number;
+    avgMs: number;
+    last: WebhookDeliveryRecord | null;
+    recent: WebhookDeliveryRecord[];
+  };
+  /**
+   * Fila Bull do WORKER — compartilhada por todas as instâncias dele, NÃO desta key.
+   * `null` quando a leitura da fila falhou. Use `delivery` para julgar esta instância.
+   */
+  queue: {
+    waiting: number;
+    active: number;
+    completed: number;
+    failed: number;
+    delayed: number;
+    worker: string;
+    scope: 'worker-global';
+  } | null;
+}
+
 export interface WebhookStatistics {
   status: number;
-  data: Record<string, unknown>;
+  data: WebhookStatisticsData;
 }
 
 
